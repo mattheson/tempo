@@ -1,0 +1,68 @@
+[package]
+name = "tempo"
+version = "0.0.0-alpha.0"
+description = "refined collaboration and version management for Ableton"
+authors = ["mattheson"]
+edition = "2021"
+rust-version = "1.82.0"
+
+[build-dependencies]
+tauri-build = { version = "2.0.2", features = [] }
+
+[dependencies]
+tauri = { version = "2.0.6", features = ["protocol-asset", "devtools"] }
+serde = { version = "1.0.214", features = ["derive"] }
+serde_json = "1.0.132"
+automerge = "0.5.12"
+autosurgeon = "0.8"
+thiserror = "2.0.1"
+tauri-plugin-dialog = "2.0.3"
+tauri-plugin-process = "2.0.1"
+tauri-plugin-shell = "2.0.2"
+tauri-plugin-log = "2.0.2"
+tauri-plugin-store = "2.1.0"
+ts-rs = "10"
+rand = "0.8"
+showfile = "0.1"
+log = "0.4"
+directories = "5"
+rusqlite = { version = "0.32.1", features = ["bundled", "time"] }
+ulid = { version = "1", features = ["serde"] }
+# trash = "5.2.0"
+quick-xml = { version = "0.37", features = ["serialize"] }
+flate2 = "1"
+hex = "0.4"
+sha2 = "0.10"
+clap = { version = "4.5.20", features = ["derive"] }
+walkdir = "2.5"
+infer = "0.16.0"
+# notify = "6.1.1"
+tokio = { version = "1", features = ["rt"] }
+time = "0.3.36"
+test-log = "0.2.16"
+tauri-plugin-devtools = "2.0.0"
+native-dialog = "0.7.0"
+
+[dev-dependencies]
+env_logger = "*"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+coreaudio-sys = "0.2.16"
+core-foundation = "0.10.0"
+cocoa = "0.26.0"
+objc = "0.2.7"
+
+[features]
+# This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.dev]
+opt-level = 3
+debug = true
+debug-assertions = true
+overflow-checks = true
+lto = false
+panic = 'unwind'
+incremental = true
+codegen-units = 256
+rpath = false
