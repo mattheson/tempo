@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { StateStorage, createJSONStorage, persist } from "zustand/middleware";
-import { FolderViews, Views as View } from "./types";
+import { FolderViews, Views } from "./types";
 import { useEffect, useRef } from "react";
 import { load, Store } from "@tauri-apps/plugin-store";
 import {
@@ -126,8 +126,8 @@ interface TempoStore {
   needMacOSSetup: boolean | null;
   setNeedMacOSSetup: (needSetup: boolean) => void;
 
-  view: View;
-  setView: (view: View) => void;
+  view: Views;
+  setView: (view: Views) => void;
 
   folderView: FolderViews;
   setFolderView: (view: FolderViews) => void;
@@ -164,14 +164,14 @@ interface TempoStore {
   folders: FolderInfo[] | null;
   setFolders: (folders: FolderInfo[]) => void;
 
-  pollFoldersOnce: () => void;
+  pollFoldersOnce: () => Promise<any>;
 
   folderData: FolderData | null;
   setFolderData: (data: FolderData) => void;
 
-  pollFolderDataOnce: () => void;
+  pollFolderDataOnce: () => Promise<any>;
 
-  _pollFolderData: (folder: string) => void;
+  _pollFolderData: (folder: string) => Promise<any>;
 
   _folderPollingId: any | null;
   // --------------------------------------------------------------------
@@ -238,7 +238,8 @@ export const useStore = create<TempoStore>()(
           }),
 
         view: "home",
-        setView: (view: View) =>
+
+        setView: (view: Views) =>
           set((state: TempoStore) => {
             state.view = view;
             if (view == "home") {
@@ -348,9 +349,9 @@ export const useStore = create<TempoStore>()(
           }),
 
         pollFoldersOnce: () => {
-          if (!get().focused) return;
+          if (!get().focused) return Promise.resolve(null);
 
-          scanFolders().then(
+          return scanFolders().then(
             (f) => {
               if (!equal(f, get().folders)) {
                 get().setFolders(f);
@@ -369,17 +370,18 @@ export const useStore = create<TempoStore>()(
           }),
 
         pollFolderDataOnce: () => {
-          if (!get().focused) return;
+          if (!get().focused) return Promise.resolve(null);
+
           const folder = get().folder;
 
-          if (!folder || get().view != "folder") return;
+          if (!folder || get().view != "folder") return Promise.resolve(null);
 
-          get()._pollFolderData(folder);
+          return get()._pollFolderData(folder);
         },
 
         // do not use this
         _pollFolderData: (folder: string) => {
-          getFolderData(folder).then(
+          return getFolderData(folder).then(
             (d) => {
               if (!equal(get().folderData, d)) {
                 console.log(d);
@@ -387,7 +389,9 @@ export const useStore = create<TempoStore>()(
               }
             },
             (err) => {
-              get().addError(`Error while loading folder data: ${JSON.stringify(err)}`);
+              get().addError(
+                `Error while loading folder data: ${JSON.stringify(err)}`
+              );
             }
           );
         },

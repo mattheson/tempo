@@ -27,13 +27,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FolderInfo } from "@bindings/FolderInfo";
+import { RefreshButton } from "@/RefreshButton";
 
 export function HomeView() {
-  const [folders, invokeWithError, defaultUsername] = useStore((state) => [
-    state.folders,
-    state.invokeWithError,
-    state.defaultUsername!,
-  ]);
+  const [folders, invokeWithError, defaultUsername, pollFoldersOnce] = useStore(
+    (state) => [
+      state.folders,
+      state.invokeWithError,
+      state.defaultUsername!,
+      state.pollFoldersOnce,
+    ]
+  );
 
   const [loadingFolder, setLoadingFolder] = useState(false);
   const [insideFolder, setInsideFolder] = useState<{
@@ -82,13 +86,16 @@ export function HomeView() {
             <Button
               size="sm"
               variant="ghost"
-              className="p-1"
+              className="p-1 mr-4"
               onClick={() => {
                 setupFolder();
               }}
             >
               <Plus className="h-5 w-5" />
             </Button>
+            <div className="mr-4">
+              <RefreshButton refresh={pollFoldersOnce} />
+            </div>
           </div>
           <div className="flex flex-col gap-4 mb-6 flex-wrap">
             {folders == null ? (

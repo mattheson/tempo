@@ -26,6 +26,7 @@ import { createChannel } from "../commands";
 import { extractFilename, LoadingSpinnerBlack } from "../misc";
 import { useStore } from "../Store";
 import { /*FolderViews, */ getChannelName } from "../types";
+import { RefreshButton } from "@/RefreshButton";
 
 export function TopBar() {
   const [
@@ -48,6 +49,8 @@ export function TopBar() {
     setChannel,
     setSettingsOpen,
     setPluginsOpen,
+    
+    pollFolderDataOnce
   ] = useStore((state) => [
     state.invokeWithError,
 
@@ -68,6 +71,8 @@ export function TopBar() {
     state.setChannel,
     state.setSettingsOpen,
     state.setPluginsOpen,
+
+    state.pollFolderDataOnce
   ]);
 
   const [isHovering, setIsHovering] = useState(false);
@@ -354,6 +359,16 @@ export function TopBar() {
     );
   }
 
+  function renderRefresh() {
+    if (view !== "folder") return null;
+
+    return (
+      <div className={sharedButtonStyles + " items-center"} style={buttonStyle}>
+        <RefreshButton refresh={pollFolderDataOnce} />
+      </div>
+    )
+  }
+
   function renderSettings() {
     if (view !== "home") return null;
 
@@ -383,6 +398,7 @@ export function TopBar() {
       {/* {renderUsers()} */}
       {renderFolderDropdown()}
       {renderChannelDropdown()}
+      {renderRefresh()}
       {renderViewToggle()}
       <div className="ml-auto flex flex-row">
         {renderPlug()}
