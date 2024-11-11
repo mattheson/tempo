@@ -8,7 +8,9 @@ use std::{
 use log::{error, warn};
 use walkdir::WalkDir;
 
-use crate::misc::{get_filename, get_ulid_chars, is_valid_ulid, path_to_str, Result, TempoError};
+use crate::misc::{
+    get_filename, get_ulid_chars, is_valid_ulid, path_to_str, Result, TempoError, FOLDER_SCHEMA,
+};
 
 /// Generates a set of required subdirectories in a Tempo folder.
 pub fn get_tempo_dirs(folder: &Path) -> Vec<PathBuf> {
@@ -44,7 +46,17 @@ pub fn create_tempo_folder(folder: &Path) -> Result<()> {
         fs::create_dir_all(d)?;
     }
 
+    create_tempo_schema(folder)?;
+
     Ok(())
+}
+
+pub fn create_tempo_schema(folder: &Path) -> Result<()> {
+    // folder schema version
+    Ok(fs::write(
+        folder.join("tempo").join("schema"),
+        FOLDER_SCHEMA.to_string(),
+    )?)
 }
 
 pub fn validate_folder_structure(folder: &Path) -> std::result::Result<(), String> {
@@ -76,6 +88,14 @@ pub fn validate_folder_structure(folder: &Path) -> std::result::Result<(), Strin
                 .into_iter()
                 .fold(String::new(), |s, d| s + &d + " ")
         ));
+    }
+
+    // schema validation isn't really validating "folder structure" but this is ok here
+    let schema = read_folder_schema(folder)
+        .map_err(|e| format!("Failed to read folder schema version: {e}"))?;
+
+    if schema != FOLDER_SCHEMA {
+        return Err(format!("Folder has an unsupported Tempo schema! You might need to use a newer/older version of Tempo. This version of Tempo supports schema {FOLDER_SCHEMA}, found {schema} in folder"));
     }
 
     Ok(())
@@ -164,7 +184,10 @@ pub fn note_exists(folder: &Path, channel_ulid: Option<&str>, note_ulid: &str) -
 }
 
 pub fn file_exists(folder: &Path, file_sha256: &str) -> Result<bool> {
-    exists_with_nice_error(folder, fs::exists(get_file_dir_path(folder, file_sha256).join("file")))
+    exists_with_nice_error(
+        folder,
+        fs::exists(get_file_dir_path(folder, file_sha256).join("file")),
+    )
 }
 
 // pub fn file_meta_exists(folder: &Path, file_sha256: &str) -> Result<bool> {
@@ -278,4 +301,13 @@ pub fn iter_clients(folder: &Path) -> Result<impl Iterator<Item = (PathBuf, Stri
                 }
             }
         }))
+}
+
+pub fn read_folder_schema(folder: &Path) -> Result<usize> {
+    Ok(
+        std::str::from_utf8(&fs::read(folder.join("tempo").join("schema"))?)
+            .map_err(|e| TempoError::Folder(format!("Failed to parse schema: {e}")))?
+            .trim()
+            .parse::<usize>()?,
+    )
 }

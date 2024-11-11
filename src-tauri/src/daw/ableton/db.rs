@@ -9,6 +9,20 @@
 // https://opensource.org/licenses/MIT
 // =====================================================================================
 
+// ableton plugin database scanning
+
+/*
+tempo reads from Ableton's Live-files/Live-plugins databases.
+we look for the "plugins" table.
+
+in live 12 ableton added the Live-plugins database which appears to be the new location of the "plugins" table.
+older versions of ableton use the Live-files database.
+
+algorithm for locating plugin database is as follows:
+- get all db entries in Live Database folder, filter any non-db entries, sort them by modification time
+- move any Live-files entries to the front of our db entry Vec
+ */
+
 use std::{
     collections::HashSet,
     fs::{self, read_dir, DirEntry, ReadDir},
@@ -25,13 +39,13 @@ use log::{error, info, warn};
 use rusqlite::Connection;
 use rusqlite::OpenFlags;
 
-/// Checks for a live database with a valid plugin table
+/// Checks whether there's at least one live database with a valid plugin table
 pub fn have_plugin_db() -> Result<bool> {
     if !fs::exists(get_ableton_db_dir()?)? {
         return Ok(false)
     }
 
-    for ent in get_db_dir_entries_sorted()? {
+    for ent in get_organized_dbs()? {
         match check_db_for_plugins_table(&ent.path()) {
             Ok(true) => return Ok(true),
             Ok(false) => (),
@@ -41,7 +55,8 @@ pub fn have_plugin_db() -> Result<bool> {
     Ok(false)
 }
 
-fn get_db_dir_entries_sorted() -> Result<Vec<DirEntry>> {
+/// Gets databases in Live Database directory sorted by modification time
+fn get_sorted_dbs() -> Result<Vec<DirEntry>> {
     let mut dirs: Vec<(DirEntry, SystemTime)> = get_db_dir_entries()?
         .filter_map(|ent| match ent {
             Ok(ent) => Some(ent),
@@ -74,9 +89,39 @@ fn get_db_dir_entries_sorted() -> Result<Vec<DirEntry>> {
         })
         .collect();
 
+    // most recently modified at front
     dirs.sort_by(|(_, lt), (_, rt)| lt.cmp(rt).reverse());
 
-    Ok(dirs.into_iter().map(|(dir, _)| dir).collect())
+    let res = dirs.into_iter().map(|(dir, _)| dir).collect();
+    info!("get_db_dir_entries_sorted(): got sorted dbs: {:#?}", res);
+
+    Ok(res)
+}
+
+/// gets dbs sorted by recent modification time
+/// gets dbs in moves any Live-plugins dbs to the front of the sorted db vec
+fn get_organized_dbs() -> Result<Vec<DirEntry>> {
+    let dbs = get_sorted_dbs()?;
+
+    let mut live_plugins_dbs: Vec<DirEntry> = vec![];
+    let mut live_files_dbs: Vec<DirEntry> = vec![];
+
+    for db in dbs {
+        // lossy should be ok here
+        let db_os_name = db.file_name();
+        let db_filename = db_os_name.to_string_lossy();
+        if db_filename.starts_with("Live-plugins") {
+            live_plugins_dbs.push(db);
+        } else if db_filename.starts_with("Live-files") {
+            live_files_dbs.push(db);
+        } else {
+            info!("get_organized_dbs(): found db that doesn't start with Live-plugins or Live-files, skipping: {db_filename}");
+        }
+    }
+
+    live_plugins_dbs.append(&mut live_files_dbs);
+
+    Ok(live_plugins_dbs)
 }
 
 #[cfg(target_os = "macos")]
@@ -98,9 +143,6 @@ fn get_ableton_db_dir() -> Result<PathBuf> {
 
 fn get_db_dir_entries() -> Result<ReadDir> {
     let read = read_dir(get_ableton_db_dir()?)?;
-
-    info!("get_db_dir_entries_sorted() read directories: {:#?}", &read);
-
     Ok(read)
 }
 
@@ -124,11 +166,7 @@ fn check_db_plugin_schema(con: &Connection) -> Result<bool> {
         Ok(())
     })?;
 
-    if needed_cols.is_empty() {
-        Ok(true)
-    } else {
-        Ok(false)
-    }
+    Ok(needed_cols.is_empty())
 }
 
 pub struct AbletonPluginRow {
@@ -149,7 +187,7 @@ pub enum ScannedAbletonPlugin {
 /// Gets all plugins in the Ableton plugin database.
 /// The most recently modified database will be used.
 pub fn scan_plugin_db() -> Result<Vec<ScannedAbletonPlugin>> {
-    let ents = get_db_dir_entries_sorted()?;
+    let ents = get_organized_dbs()?;
 
     if ents.is_empty() {
         return Err(TempoError::Ableton("Failed to find Ableton plugin database".into()))
@@ -164,6 +202,7 @@ pub fn scan_plugin_db() -> Result<Vec<ScannedAbletonPlugin>> {
                 ))
             }
             Some(ent) => {
+                info!("scan_plugin_db(): scanning {}", ent.file_name().to_string_lossy());
                 match rusqlite::Connection::open_with_flags(
                     ent.path(),
                     OpenFlags::SQLITE_OPEN_READ_ONLY,
@@ -171,14 +210,14 @@ pub fn scan_plugin_db() -> Result<Vec<ScannedAbletonPlugin>> {
                     Ok(con) => match check_db_plugin_schema(&con) {
                         Ok(true) => break con,
                         Ok(false) => {
-                            warn!("ableton::iter_plugins(): found db but with invalid plugin schema at {}", path_to_str(&ent.path()));
+                            warn!("scan_plugin_db(): found db but with invalid plugin schema at {}", path_to_str(&ent.path()));
                         }
                         Err(e) => {
-                            error!("ableton::iter_plugins(): error while checking db schema: {e}");
+                            error!("scan_plugin_db(): error while checking db schema: {e}");
                         }
                     },
                     Err(e) => {
-                        error!("ableton::iter_plugins(): failed to open connection to Ableton db at {}, error: {e}", path_to_str(&ent.path()))
+                        error!("scan_plugin_db(): failed to open connection to Ableton db at {}, error: {e}", path_to_str(&ent.path()))
                     }
                 }
             }
@@ -205,12 +244,12 @@ pub fn scan_plugin_db() -> Result<Vec<ScannedAbletonPlugin>> {
             Ok(row) => match ScannedAbletonPlugin::try_from(&row) {
                 Ok(row) => Some(row),
                 Err(e) => {
-                    error!("get_plugins(): error while parsing Ableton plugin db row: {e}");
+                    error!("scan_plugin_db(): error while parsing Ableton plugin db row: {e}");
                     None
                 }
             },
             Err(e) => {
-                error!("get_plugins(): error while reading Ableton plugin db row: {e}");
+                error!("scan_plugin_db(): error while reading Ableton plugin db row: {e}");
                 None
             }
         })
@@ -221,7 +260,7 @@ impl TryFrom<&AbletonPluginRow> for ScannedAbletonPlugin {
     type Error = TempoError;
 
     fn try_from(value: &AbletonPluginRow) -> Result<Self> {
-        // plugin id is url encoded, this should be safe for vst plugin ids with name
+        // plugin id is url encoded, this should be safe for vst plugin ids with : in name
         let parts: Vec<&str> = value.dev_id.split(":").collect();
 
         if parts.len() != 4 {

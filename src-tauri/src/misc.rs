@@ -7,6 +7,8 @@ use sha2::{Digest, Sha256};
 use tauri::{AppHandle, Manager};
 use thiserror::Error;
 
+pub const FOLDER_SCHEMA: usize = 0;
+
 pub type Result<T> = std::result::Result<T, TempoError>;
 
 #[derive(Debug, Error)]

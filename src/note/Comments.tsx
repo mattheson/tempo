@@ -172,7 +172,7 @@ function CommentsList({
 }) {
   return (
     <ScrollArea className="max-h-72 min-h-fit my-2 text-sm">
-      {Object.entries(comments).map(([ulid, comment]) => (
+      {Object.entries(comments).sort().map(([ulid, comment]) => (
         <div key={ulid}>
           <AComment
             commentUlid={ulid}
