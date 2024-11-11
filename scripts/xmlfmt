@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+if ! command -v xmllint 2>&1 >/dev/null; then
+    echo "Error: Please install xmllint"
+    exit 1
+fi
+
+if [ $# -eq 0 ]; then
+    echo "Error: No argument provided"
+    echo "Usage: $0 <filename.xml>"
+    exit 1
+fi
+
+if [[ $1 != *.xml ]]; then
+    echo "Error: Filename must end with .xml"
+    exit 1
+fi
+
+base_name="${1%.*}"
+
+xmllint --format $1 > ${base_name}_formatted.xml
