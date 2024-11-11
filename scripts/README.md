@@ -1,4 +1,4 @@
-Useful utilities for working on Tempo. I put these in my `~/bin`.
+Useful utilities for working on Tempo. I put `unable`, `reable` and `xmlfmt` in my `~/bin`.
 
 - `unable`: convert from .als to .xml
 - `reable`: convert from .xml to .als
