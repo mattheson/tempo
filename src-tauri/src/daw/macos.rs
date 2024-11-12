@@ -36,7 +36,7 @@ pub fn scan_audio_units() -> Result<Vec<SharedAudioUnitRow>> {
     use log::error;
 
     // macos has various types of audio components, we want to focus on audio units
-    // componentType can be checked to see the type of the audio component, there are various enums we compare against
+    // componentType can be checked to see the type of the audio component, these are various enums we compare against
     const TYPES: &[u32] = &[
         kAudioUnitType_Output,
         kAudioUnitType_MusicDevice,

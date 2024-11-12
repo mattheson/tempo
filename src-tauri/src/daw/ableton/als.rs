@@ -160,7 +160,7 @@ vst3:
 au:
 - 3 u32s, plugin type/subtype/manufacturer
 
-each of these ids can be used to construct a plugin device id as found in Ableton's sqlite db
+plugin device ids as found in Ableton's plugin db (plugins table) can be used to construct these format-specific ids
 
  */
 
@@ -371,8 +371,7 @@ impl Iterator for ProjectPluginReader {
     type Item = Result<AbletonPluginRef>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        // this iterator has no state
-        // it basically just looks for opening PluginInfo tags and calls appropriate functions when it does
+        // look for opening PluginInfo tags and call appropriate functions to match plugins
 
         if self.done {
             return None;

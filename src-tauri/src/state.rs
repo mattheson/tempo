@@ -6,7 +6,7 @@
 
 
 /*
-possible stuff for state sync in the future
+possible stuff for better state sync in the future
 
 /// Monitors state of Tempo folders for reactive updates.
 /// Emits events containing folder state.

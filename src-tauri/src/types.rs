@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::daw::{ableton::AbletonPluginRef, project::ProjectType};
 
-// TODO: figure out how to disable ts_rs generated tests when running `cargo test`
+// TODO figure out how to disable ts_rs generated tests when running `cargo test`
 // not too big of a deal though
 
 /// Stores metadata about a channel.
@@ -107,7 +107,7 @@ pub enum ProjectData {
         // this hashmap stores file references
         // these files are copied into the Files directory of the live project when copied out of Tempo
 
-        // TODO it's possible that a project references two copies of the same sample
+        // TODO it's possible that a project references two different copies of the same sample
         // i am just adjusting the filerefs to point at one copy of the sample
         // maybe could cause problems but don't see how for now
 

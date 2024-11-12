@@ -65,7 +65,7 @@ pub fn scan_filerefs(project: &Path) -> Result<ProjectFileRefScan> {
         }
     };
 
-    // returns readable path for file, otherwise error msg
+    // returns readable path for file, otherwise error
     let check_fr = |fr: &AbletonFileRef| -> std::result::Result<PathBuf, String> {
         exists(fr)?;
         readable(fr)
@@ -237,7 +237,8 @@ pub fn copy_ableton_project(
 
 /// Adds an Ableton project into a Tempo folder.
 pub fn add_ableton_project(folder: &Path, username: &str, project: &Path) -> Result<String> {
-    // TODO something feels odd in this
+    // something feels odd in this but it seems to work
+
     expect_valid_folder(folder)?;
 
     // make temporary copy of project and get output project we copy to

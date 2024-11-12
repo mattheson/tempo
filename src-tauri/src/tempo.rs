@@ -110,8 +110,6 @@ impl TempoInner {
     }
 }
 
-// TODO remove unwraps here
-
 impl Tempo {
     pub fn new(data_dir: &Path) -> Result<Self> {
         let data_file = data_dir.join("folders.json");

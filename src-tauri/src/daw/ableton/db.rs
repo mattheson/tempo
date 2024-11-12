@@ -98,8 +98,8 @@ fn get_sorted_dbs() -> Result<Vec<DirEntry>> {
     Ok(res)
 }
 
-/// gets dbs sorted by recent modification time
-/// gets dbs in moves any Live-plugins dbs to the front of the sorted db vec
+/// gets dbs sorted by recent modification time.
+/// moves any Live-plugins dbs to the front of the vec
 fn get_organized_dbs() -> Result<Vec<DirEntry>> {
     let dbs = get_sorted_dbs()?;
 
@@ -148,7 +148,6 @@ fn get_db_dir_entries() -> Result<ReadDir> {
 
 /// checks an ableton db for valid plugins table
 fn check_db_for_plugins_table(db: &Path) -> Result<bool> {
-    // TODO dont know if i need pools here
     let con = rusqlite::Connection::open_with_flags(db, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
 
     check_db_plugin_schema(&con)
@@ -181,7 +180,7 @@ pub enum ScannedAbletonPlugin {
 }
 
 // TODO it should probably be ok to load all of the plugin info into memory? not too hard to avoid this if needed
-// i have a lot of plugins and it's the plugin info is only around 200 kb
+// i have a lot of plugins and total size is only around 200 kb total
 // there is not much plugin info in db, the biggest user of db storage is the files table
 
 /// Gets all plugins in the Ableton plugin database.

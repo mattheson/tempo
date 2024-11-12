@@ -11,6 +11,9 @@ pub const FOLDER_SCHEMA: usize = 0;
 
 pub type Result<T> = std::result::Result<T, TempoError>;
 
+// TODO honestly all of these errors can just be strings
+// consider switching to anyhow
+
 #[derive(Debug, Error)]
 pub enum TempoError {
     #[error("could not load tempo, no config found")]
@@ -104,7 +107,7 @@ impl From<tauri::Error> for TempoError {
     }
 }
 
-/// Opens blocking error dialog and closes afterwards.
+/// Opens blocking error dialog and closes afterwards. Call this on the main thread.
 pub fn fatal_error(msg: &str) -> ! {
     eprintln!("fatal error: {msg}");
     let _ = native_dialog::MessageDialog::new()
@@ -271,7 +274,7 @@ pub fn open_full_disk() {
 
 #[cfg(not(target_os = "macos"))]
 pub fn open_full_disk() {
-    log::warn!("called open_settings() on non-macOS");
+    log::warn!("called open_full_disk() on non-macOS");
 }
 
 /// Returns true if we have full disk access
