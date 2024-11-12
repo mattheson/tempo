@@ -24,7 +24,10 @@
 </div>
 
 <div class="flex flex-col py-12 px-10">
-  <Button class="bg-orange-400 my-2 shadow-md">
+  <Button
+    class="bg-orange-400 my-2 shadow-md"
+    href="https://github.com/mattheson/tempo/releases/tag/tempo-v0.0.0-alpha.0"
+  >
     <div class="flex flex-row gap-x-3 items-center">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -39,7 +42,7 @@
         />
       </svg>
       macOS
-      <!-- <i class="ml-2 font-light">v0.0.0</i> -->
+      <i class="ml-2 font-light">tempo-v0.0.0-alpha.0</i>
     </div>
     <div class="ml-auto">
       <Download />
