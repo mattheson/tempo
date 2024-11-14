@@ -1,32 +1,15 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod attachment;
-mod automerge;
-mod channel;
-mod commands;
-mod daw;
-mod db;
-mod file;
-mod folder;
 mod misc;
-mod note;
-mod shared;
-mod state;
-mod structure;
 mod tempo;
-mod types;
-mod verify;
+mod db;
+mod providers;
 
-#[cfg(test)]
-mod tests;
-
-use crate::commands::*;
-
-use misc::{check_full_disk, fatal_error};
 use std::path::PathBuf;
-use tauri::Manager;
-use tempo::Tempo;
+
+use misc::fatal_error;
+// use tauri::Manager;
 
 #[cfg(dev)]
 fn get_data_dir() -> PathBuf {
@@ -83,72 +66,81 @@ fn main() {
     //     rusqlite::trace::config_log(Some(|code, msg| info!("sqlite error {code}: {msg}"))).unwrap();
     // }
 
-    if cfg!(dev) && cfg!(target_os = "macos") && !check_full_disk().unwrap() {
-        println!("error: the parent process which spawned Tempo does not have Full Disk Access.\nensure you grant Full Disk Access to your text editor/ide/terminal emulator.");
-        std::process::exit(1);
-    }
+    // if cfg!(dev) && cfg!(target_os = "macos") && !check_full_disk().unwrap() {
+    //     println!("error: the parent process which spawned Tempo does not have Full Disk Access.\nensure you grant Full Disk Access to your text editor/ide/terminal emulator.");
+    //     std::process::exit(1);
+    // }
 
-    let builder = tauri::Builder::default();
+    let builder = tauri::Builder::default().plugin(tauri_plugin_sql::Builder::new().build());
 
     let result = builder
         .plugin(devtools)
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(tauri_plugin_sql::Builder::new().build())
         .setup(|app| {
-            let data_dir = get_data_dir();
-
-            match Tempo::new(&data_dir) {
-                Ok(tempo) => {
-                    app.manage(tempo);
-
-                    let window = tauri::WebviewWindowBuilder::new(
-                        app,
-                        "main",
-                        tauri::WebviewUrl::App("index.html".into()),
-                    )
-                    .visible(false) // window opens after a little bit to prevent white screen
+            let window =
+                tauri::WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::App("/".into()))
+                    .visible(true) // window opens after a little bit to prevent white screen
                     .inner_size(1024., 768.)
                     .min_inner_size(1024., 768.)
                     .title("Tempo")
                     .build()?;
 
-                    if cfg!(dev) {
-                        window.open_devtools();
-                    }
-                },
-                Err(e) => {
-                    fatal_error(&format!("encountered an error while loading Tempo.\nyou can delete the Tempo folder in your Documents directory to reset Tempo, this will not delete any data in your shared folders.\n\nerror: {e}"));
-                },
-            }
+            // let data_dir = get_data_dir();
+
+            // match Tempo::new(&data_dir) {
+            //     Ok(tempo) => {
+            //         app.manage(tempo);
+
+            //         let window = tauri::WebviewWindowBuilder::new(
+            //             app,
+            //             "main",
+            //             tauri::WebviewUrl::App("index.html".into()),
+            //         )
+            //         .visible(false) // window opens after a little bit to prevent white screen
+            //         .inner_size(1024., 768.)
+            //         .min_inner_size(1024., 768.)
+            //         .title("Tempo")
+            //         .build()?;
+
+            //         if cfg!(dev) {
+            //             window.open_devtools();
+            //         }
+            //     },
+            //     Err(e) => {
+            //         fatal_error(&format!("encountered an error while loading Tempo.\nyou can delete the Tempo folder in your Documents directory to reset Tempo, this will not delete any data in your shared folders.\n\nerror: {e}"));
+            //     },
+            // }
 
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            get_store_path,
-            scan_folders,
-            check_folder_inside_folder,
-            is_username_free,
-            create_or_add_folder,
-            scan_plugins,
-            create_channel,
-            create_note,
-            add_comment,
-            need_full_disk,
-            open_full_disk,
-            restart,
-            fatal,
-            copy_project,
-            get_file_info,
-            verify_user_has_ableton,
-            scan_folder,
-            scan_folders,
-            get_folder_data,
-            get_attachment_type,
-            remove_folder,
-            scan_project_file_refs,
-            scan_project_plugins,
-            get_last_plugin_scan_time
+            // get_store_path,
+            // scan_folders,
+            // check_folder_inside_folder,
+            // is_username_free,
+            // create_or_add_folder,
+            // scan_plugins,
+            // create_channel,
+            // create_note,
+            // add_comment,
+            // need_full_disk,
+            // open_full_disk,
+            // restart,
+            // fatal,
+            // copy_project,
+            // get_file_info,
+            // verify_user_has_ableton,
+            // scan_folder,
+            // scan_folders,
+            // get_folder_data,
+            // get_attachment_type,
+            // remove_folder,
+            // scan_project_file_refs,
+            // scan_project_plugins,
+            // get_last_plugin_scan_time
         ])
         .run(tauri::generate_context!());
 

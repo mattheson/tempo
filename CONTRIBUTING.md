@@ -4,8 +4,6 @@ Contributions to Tempo are welcome!
 
 I'm currently a student still, so my inexperience might be present in many parts of the codebase. If you're an experienced developer (especially if you have experience with Rust/Tauri/React), your help would be very valuable!
 
-My top focus is figuring out how to make Tempo scalable and work well long-term. The design of Tempo's internals is suboptimal in many ways. I'm in the process of rethinking and redesigning its internals.
-
 ## Ways to Help
 ### Testing
 The best way you can help out with Tempo right now is to **use it**.

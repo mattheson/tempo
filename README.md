@@ -1,6 +1,8 @@
 # Tempo 
 [website/manual](https://mattheson.github.io/tempo/)
 
+## This is the beta branch. Lots of changes are coming...
+
 Refined collaboration and version management for Ableton.
 Go to "Releases" to download.
 

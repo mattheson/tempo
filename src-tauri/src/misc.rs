@@ -3,111 +3,13 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use anyhow::{anyhow, Result};
 use sha2::{Digest, Sha256};
 use tauri::{AppHandle, Manager};
-use thiserror::Error;
 
 pub const FOLDER_SCHEMA: usize = 0;
 
-pub type Result<T> = std::result::Result<T, TempoError>;
-
-// TODO honestly all of these errors can just be strings
-// consider switching to anyhow
-
-#[derive(Debug, Error)]
-pub enum TempoError {
-    #[error("could not load tempo, no config found")]
-    FailedToLoad,
-    #[error("{0}")]
-    Doc(String),
-    #[error("the username {0} is already in use")]
-    TakenUsername(String),
-    #[error("{0}")]
-    InvalidFolder(String),
-
-    #[error("{0}")]
-    Path(String),
-    #[error("{0}")]
-    File(String),
-    #[error("{0}")]
-    Folder(String),
-    #[error("{0}")]
-    Note(String),
-    #[error("{0}")]
-    Channel(String),
-    #[error("{0}")]
-    Config(String),
-    #[error("{0}")]
-    Db(String),
-
-    #[error("{0}")]
-    Daw(String),
-    #[error("{0}")]
-    Ableton(String),
-    #[error("{0}")]
-    Plugin(String),
-
-    #[error("{0}")]
-    MacOs(String),
-
-    #[error("{0}")]
-    Project(String),
-    #[error("{0}")]
-    Audio(String),
-
-    // other errors
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-    #[error(transparent)]
-    Json(#[from] serde_json::Error),
-    #[error(transparent)]
-    UlidDecode(#[from] ulid::DecodeError),
-    #[error(transparent)]
-    UlidEncode(#[from] ulid::EncodeError),
-    #[error(transparent)]
-    FromHex(#[from] hex::FromHexError),
-    #[error(transparent)]
-    FromUtf8(#[from] std::string::FromUtf8Error),
-    #[error(transparent)]
-    ParseInt(#[from] std::num::ParseIntError),
-    #[error("{0}")]
-    ParseId(String),
-    #[error(transparent)]
-    Xml(#[from] quick_xml::Error),
-    #[error(transparent)]
-    XmlEncoding(#[from] quick_xml::encoding::EncodingError),
-    #[error(transparent)]
-    XmlEscape(#[from] quick_xml::escape::EscapeError),
-    #[error(transparent)]
-    Time(#[from] std::time::SystemTimeError),
-    #[error(transparent)]
-    Automerge(#[from] automerge::AutomergeError),
-    #[error(transparent)]
-    Reconcile(#[from] autosurgeon::ReconcileError),
-    #[error(transparent)]
-    Hydrate(#[from] autosurgeon::HydrateError),
-    #[error(transparent)]
-    Sql(#[from] rusqlite::Error),
-    #[error(transparent)]
-    Other(#[from] Box<dyn std::error::Error + Send + Sync>),
-
-    #[error("{0}")]
-    Tauri(String),
-}
-
-impl From<TempoError> for String {
-    fn from(value: TempoError) -> Self {
-        value.to_string()
-    }
-}
-
-impl From<tauri::Error> for TempoError {
-    fn from(value: tauri::Error) -> Self {
-        TempoError::Tauri(value.to_string())
-    }
-}
-
-/// Opens blocking error dialog and closes afterwards. Call this on the main thread.
+/// Opens blocking error dialog and closes afterwards.
 pub fn fatal_error(msg: &str) -> ! {
     eprintln!("fatal error: {msg}");
     let _ = native_dialog::MessageDialog::new()
@@ -124,138 +26,6 @@ pub fn fatal_error_close_windows(handle: &AppHandle, msg: &str) -> ! {
     }
     fatal_error(msg)
 }
-
-/*
-
-impl TryFrom<Plugin> for PluginRow {
-    type Error = TempoError;
-
-    fn try_from(value: Plugin) -> Result<Self> {
-        let name = if let Some(name) = value.name {
-            name
-        } else {
-            return Err(TempoError::Db(format!(
-                "Cannot convert Plugin into PluginRow, missing name for plugin: {:#?}",
-                value.info
-            )));
-        };
-        let vendor = if let Some(vendor) = value.vendor {
-            vendor
-        } else {
-            return Err(TempoError::Db(format!(
-                "Cannot convert Plugin into PluginRow, missing vendor for plugin: {:#?}",
-                value.info
-            )));
-        };
-        let (plugin_type, id) = match value.info {
-            PluginInfo::Au {
-                plugin_type,
-                au_subtype,
-                au_manufacturer,
-            } => {
-                let bytes: [u8; 12] = transmute!([au_type, au_subtype, au_manufacturer]);
-                ("au".to_string(), Vec::from(bytes))
-            }
-            PluginInfo::Vst { id } => {
-                let bytes: [u8; 4] = transmute!(id);
-                ("vst".to_string(), Vec::from(bytes))
-            }
-            PluginId::Vst3 { guid } => {
-                let bytes: [u8; 16] = transmute!(guid);
-                ("vst3".to_string(), Vec::from(bytes))
-            }
-        };
-        Ok(PluginRow {
-            plugin_type,
-            id,
-            name,
-            vendor,
-        })
-    }
-}
-
-impl TryFrom<PluginRow> for Plugin {
-    type Error = TempoError;
-
-    fn try_from(value: PluginRow) -> Result<Self> {
-        let PluginRow {
-            plugin_type,
-            id,
-            name,
-            vendor,
-        } = value;
-
-        match plugin_type.as_str() {
-            "au" => {
-                let bytes: [u8; 12] = id.try_into().map_err(|e: Vec<u8>| TempoError::Db(format!("Could not parse PluginRow, expected 12-byte id for au, found {} bytes instead", e.len())))?;
-                let values: [u32; 3] = transmute!(bytes);
-                Ok(Plugin {
-                    info: PluginId::Au {
-                        au_type: values[0],
-                        au_subtype: values[1],
-                        au_manufacturer: values[2],
-                    },
-                    name: Some(name),
-                    vendor: Some(vendor),
-                })
-            }
-            "vst" => {
-                let bytes: [u8; 4] = id.try_into().map_err(|e: Vec<u8>| TempoError::Db(format!("Could not parse PluginRow, expected 4-byte id for vst, found {} bytes instead", e.len())))?;
-                let id = transmute!(bytes);
-                Ok(Plugin {
-                    info: PluginId::Vst { id },
-                    name: Some(name),
-                    vendor: Some(vendor),
-                })
-            }
-            "vst3" => {
-                let bytes: [u8; 16] = id.try_into().map_err(|e: Vec<u8>| TempoError::Db(format!("Could not parse PluginRow, expected 16-byte id for vst3, found {} bytes instead", e.len())))?;
-                let guid: [u32; 4] = transmute!(bytes);
-                Ok(Plugin {
-                    info: PluginId::Vst3 { guid },
-                    name: Some(name),
-                    vendor: Some(vendor),
-                })
-            }
-            t => Err(TempoError::Ableton(format!(
-                "Could not parse PluginRow, found unknown type {}",
-                t
-            ))),
-        }
-    }
-}
-
-
-impl TryFrom<PluginRow> for ScannedPlugin {
-    type Error = TempoError;
-
-    fn try_from(value: PluginRow) -> std::result::Result<Self, Self::Error> {
-        let PluginRow {
-            plugin_type,
-            id,
-            name,
-            vendor,
-        } = value;
-
-        let plugin_type = match plugin_type.as_str() {
-            "au" => PluginType::Au,
-            "vst" => PluginType::Vst,
-            "vst3" => PluginType::Vst3,
-            t => {
-                return Err(TempoError::Plugin(format!(
-                    "Could not build ScannedPlugin from PluginRow, unknown plugin type {t}"
-                )))
-            }
-        };
-
-        Ok(ScannedPlugin {
-            plugin_type,
-            name,
-            vendor,
-        })
-    }
-}
-*/
 
 #[cfg(target_os = "macos")]
 pub fn open_full_disk() {
@@ -279,17 +49,10 @@ pub fn open_full_disk() {
 
 /// Returns true if we have full disk access
 #[cfg(target_os = "macos")]
-pub fn check_full_disk() -> Result<bool> {
+pub fn check_full_disk(home_dir: &Path) -> bool {
     // macOS has no api for telling whether we have full disk access directly
     // there are some directories we can try reading to tell whether we have access or not
     // based off of https://github.com/MacPaw/PermissionsKit/blob/master/PermissionsKit/Private/FullDiskAccess/MPFullDiskAccessAuthorizer.m
-
-    // this can fail if directories::UserDirs::new() fails for some reason
-
-    let dirs = directories::UserDirs::new().ok_or(TempoError::Other(
-        "Failed to find home directory when checking for Full Disk Access".into(),
-    ))?;
-    let home_dir = dirs.home_dir();
 
     let test_paths: [PathBuf; 4] = [
         home_dir.join("Library/Safari/CloudTabs.db"),
@@ -300,11 +63,11 @@ pub fn check_full_disk() -> Result<bool> {
 
     for p in test_paths {
         if std::fs::File::open(p).is_ok() {
-            return Ok(true);
+            return true;
         }
     }
 
-    Ok(false)
+    false
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -336,10 +99,10 @@ pub fn extract_file_extension(filename: &str) -> (String, Option<String>) {
 
 pub fn hash_file(file: &Path) -> Result<String> {
     let mut file = std::fs::File::open(file).map_err(|e| {
-        TempoError::File(format!(
+        anyhow!(
             "Failed to open file {} to calculate hash, error: {e}",
             path_to_str(file)
-        ))
+        )
     })?;
     let mut hasher = Sha256::new();
     let mut buffer = [0; 1024];
@@ -359,10 +122,10 @@ pub fn hash_file(file: &Path) -> Result<String> {
 pub fn get_filename(path: &Path) -> Result<String> {
     Ok(path
         .file_name()
-        .ok_or(TempoError::File(format!(
+        .ok_or(anyhow!(
             "File {} does not have a filename",
             path.to_string_lossy()
-        )))?
+        ))?
         .to_string_lossy()
         .to_string())
 }

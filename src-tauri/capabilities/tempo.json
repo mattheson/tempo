@@ -17,6 +17,7 @@
     "dialog:allow-message",
     "process:allow-exit",
     "shell:allow-open",
-    "store:default"
+    "store:default",
+    "sql:default"
   ]
 }

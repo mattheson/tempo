@@ -125,25 +125,21 @@ The layout of a **shared Tempo folder** is as follows:
 
 - `[folder]`: user-created directory, name can be anything
   - `tempo`: tempo directory, holds all data
+    - `info`: doc which stores metadata about this folder
     - `channels`: stores **channel directories**
       - `global`: stores global channel
         - has same layout as example channel folder below, but without metadata document
-      - `aa`: stores channels where ulid hash part starts with 'aa'
-        - `[ulid]`: a **channel directory**
-          - `meta`: a directory which holds the channel metadata automerge document
-            - `[sha256]`: an Automerge document containing metadata about this channel
-          - `aa`: a directory which holds **notes** where ulid hash part starts with 'aa'
-            - `[ulid]`: a directory containing a note added in this channel
-              - `[sha256]`: the Automerge note document
+      - `[ulid]`: a **channel directory**
+        - `aa`: a directory which holds **notes** where ulid hash part starts with 'aa'
+          - `[ulid]`: a directory containing a note added in this channel
+            - `[sha256]`: the Automerge note document
     - `files`: stores copies of files
       - `aa`: stores files starting with sha256 starting with `aa`
         - `[sha256]`: a directory corresponding to a file starting with `aa` in sha256 hash, named with the hash
           - `file`: the file itself
           - `meta`: JSON which holds file metadata. this metadata is immutable
     - `clients` : client-specific metadata
-      - `[actor id]`: metadata for a user with this actor id
-        - `shared.sqlite` : sqlite database containing shared client metadata for the user with this actor id (e.g. installed plugins)
-        - this db is in a folder because it's possible for sync issues to emerge with users overwriting dbs and creating write conflicts, tempo always looks for the `clients/{username}/shared.sqlite` file and will ignore other dbs
+      - `[install ulid]`: metadata for a user with this install ulid, json
 
 Importantly, all folders which store an automerge document will always be in the following format:
 
@@ -163,33 +159,8 @@ The layout of the per-client data directory is as follows:
   - `shared.sqlite`: the latest scan of plugins. copied into folders.
 
 ## State Management
-One tricky problem is synchronizing state between the backend and frontend.
-
-I'm opting for a very naive approach to state management for the time being:
-- data is synchronized through Tauri commands
-  - frontend requests data from backend
-  - had explored using tauri events, decided to keep it simple and just do everything through commands
-- all data in folders is loaded to the frontend
-  - specifically all channels/notes in a folder
-- to achieve reactive updates to folders, the frontend polls the backend for data/state
-  - yes, all data in the folder is constantly loaded because of this
-  - this will be very bad with very large folders
-
-Optimally, Tempo would load data in a very granular fashion. For example, in the chat view, Tempo only needs to load the notes which are currently being viewed.
-
-The reason that `tempo.rs/folder.rs/channel.rs/note.rs/etc.` have lots of `Arc`s is that I hope to use object lifetimes for state managment somehow. I anticipate that I'll use tokio tasks for filesystem event monitoring and polling, `Arcs` will probably be needed.
-
-For example, in the chat view, maybe the frontend could call some kind of `request_latest_note()` command, providing a channel ulid. (or it could query some sqlite database)
-Then, maybe the frontend calls `register_note(ulid)`, which spawns a `Note` instance on the Rust side.
-`Note` could internally handle monitoring the particular note on the filesystem, both through filesystem events and occasional polling.
-When `Note` detects a change, it could emit an event to the frontend containing the new state of the note.
-When the user scrolls in the chat view, if a note goes offscreen, maybe `unregister_note(ulid)` would be called, which would drop the `Note` instance.
-There could be a way to tie this together nicely with React.
-
-Tempo uses lots of sources of data (json, automerge, sqlite) which makes managing data/state feel kind of messy, my current strategy has been to use serde and ts_rs for sharing data between the backend and frontend which has worked fairly well.
-
-Overall, I think a full redesign of Tempo's internals is probably needed to make Tempo scale well with large folders and not feel so messy.
-My current focus is figuring out how I could relegate folder data all into sqlite somehow. It'd be very nice to directly use sqlite on the frontend. I see this as the best path forward. I'll explore using tauri's sql plugin.
+State is synchronized through a SQLite database which the frontend reads from and the backend modifies.
+When modifying/creating/removing a row, the backend will notify the frontend of changes.
 
 ## Further Considerations
 - consider whether files should use headers instead of separate metadata files (`FileInfo`s/meta files)
