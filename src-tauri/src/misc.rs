@@ -75,10 +75,6 @@ pub fn check_full_disk() -> Result<bool> {
     Ok(true)
 }
 
-pub fn new_ulid() -> String {
-    ulid::Ulid::new().to_string()
-}
-
 pub fn remove_file_extension(filename: &str) -> String {
     match filename.rfind('.') {
         Some(index) => filename[..index].to_string(),
@@ -141,9 +137,9 @@ pub fn get_unix_timestamp() -> Result<u64> {
         .map(|d| d.as_millis())? as u64)
 }
 
-pub fn is_valid_ulid(s: &str) -> bool {
-    s.len() == 26 && s.chars().all(|c| c.is_ascii_alphanumeric())
-}
+// pub fn is_valid_ulid(s: &str) -> bool {
+//     s.len() == 26 && s.chars().all(|c| c.is_ascii_alphanumeric())
+// }
 
 pub fn is_sha256(s: &str) -> bool {
     s.len() == 64 && s.chars().all(|c| c.is_ascii_hexdigit())

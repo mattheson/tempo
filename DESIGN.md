@@ -41,6 +41,16 @@ A classmate of mine (thanks Matty!) suggested I looked into CRDTs as a means of 
 
 The core unit that's shared between users are **folders**. These folders can be synced using file sync services.
 
+### Issues with Local-First
+There are a few issues with the local-first file sync solution.
+
+Firstly, file sync services can have a lot of latency, not allowing for realtime collaboration. There could be plenty of situations
+
+Secondly, it can be desirable to have your work backed up to the cloud.
+
+Lastly, the behavior of sync services (especially in the)
+
+
 ### File and Plugin Synchronization
 One issue that's emerged in my experiences collaborating with others are missing file references or plugin mismatches.
 I dug into the internals of Ableton's project files to see what was possible to solve this issue. Ableton's project file format is simply gzipped XML, so it was very easy to figure out what was going on.
@@ -159,8 +169,13 @@ The layout of the per-client data directory is as follows:
   - `shared.sqlite`: the latest scan of plugins. copied into folders.
 
 ## State Management
-State is synchronized through a SQLite database which the frontend reads from and the backend modifies.
-When modifying/creating/removing a row, the backend will notify the frontend of changes.
+State management can be tricky with Tauri. You have to pass data between the frontend and backend using Tauri's command and event system.
+
+*How do we read data on the frontend?*
+
+The simplest solution I've found is to write **everything** into a SQLite database, and give the frontend readonly access to this database using Tauri's SQL plugin. This seems like the most flexible way for the frontend to read data. Directly using SQL on the frontend allows us to avoid writing a bunch of commands/events to pass data to the frontend.
+
+
 
 ## Further Considerations
 - consider whether files should use headers instead of separate metadata files (`FileInfo`s/meta files)

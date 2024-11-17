@@ -5,6 +5,8 @@ mod misc;
 mod tempo;
 mod db;
 mod providers;
+mod notif;
+mod types;
 
 use std::path::PathBuf;
 

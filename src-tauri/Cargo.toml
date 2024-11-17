@@ -23,9 +23,6 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 automerge = "0.5"
 autosurgeon = "0.8"
-ts-rs = "10"
-rand = "0.8"
-showfile = "0.1"
 log = "0.4"
 ulid = { version = "1", features = ["serde"] }
 quick-xml = { version = "0.37", features = ["serialize"] }
@@ -41,6 +38,7 @@ native-dialog = "0.7"
 sqlx = { version = "0.8", features = ["sqlite"] }
 anyhow = "1.0.93"
 dashmap = "6.1.0"
+uuid = "1.11.0"
 
 # notify = "6"
 # trash = "5"
