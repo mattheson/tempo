@@ -7,6 +7,7 @@ mod db;
 mod providers;
 mod notif;
 mod types;
+mod id;
 
 use std::path::PathBuf;
 
