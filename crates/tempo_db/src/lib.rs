@@ -1,4 +1,3 @@
-use tempo_misc::path_to_str;
 use anyhow::Result;
 use dashmap::DashMap;
 use sqlx::{pool::PoolConnection, Sqlite, SqlitePool};
@@ -6,6 +5,7 @@ use std::{
     path::{Path, PathBuf},
     sync::LazyLock,
 };
+use tempo_misc::path_to_str;
 
 struct DbManager(DashMap<PathBuf, SqlitePool>);
 
@@ -26,7 +26,7 @@ impl DbManager {
     // TODO auto clean up of pools with no connections
 }
 
-static DBS: LazyLock<DbManager> = LazyLock::new(|| DbManager::new());
+static DBS: LazyLock<DbManager> = LazyLock::new(DbManager::new);
 
 /// Handle to Tempo's sqlite database stored in the data directory.
 pub struct TempoDb {

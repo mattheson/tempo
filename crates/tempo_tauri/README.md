@@ -1,1 +1,0 @@
-Tauri binary for Tempo.

@@ -4,8 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tempo_db.path = "../tempo_db"
-tempo_types.path = "../tempo_types"
+tempo_db.workspace = true
+tempo_types.workspace = true
+tempo_id.workspace = true
 
 anyhow.workspace = true
 tauri.workspace = true
+tokio.workspace = true

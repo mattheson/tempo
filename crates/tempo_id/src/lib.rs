@@ -11,6 +11,12 @@ impl Ulid {
     }
 }
 
+impl Default for Ulid {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl serde::Serialize for Ulid {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -69,9 +75,9 @@ impl autosurgeon::Reconcile for Ulid {
     }
 }
 
-impl ToString for Ulid {
-    fn to_string(&self) -> String {
-        self.0.to_string()
+impl std::fmt::Display for Ulid {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
@@ -79,7 +85,7 @@ impl std::str::FromStr for Ulid {
     type Err = ulid::DecodeError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(ulid::Ulid::from_string(&s)?))
+        Ok(Self(ulid::Ulid::from_string(s)?))
     }
 }
 
@@ -89,6 +95,12 @@ pub struct Uuid(uuid::Uuid);
 impl Uuid {
     pub fn new() -> Self {
         Self(uuid::Uuid::new_v4())
+    }
+}
+
+impl Default for Uuid {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -150,12 +162,11 @@ impl autosurgeon::Reconcile for Uuid {
     }
 }
 
-/// Sha256 hash of a file
-pub struct FileHash {
-    bytes: Vec<u8>,
+pub struct FileRef {
+    sha256_bytes: Vec<u8>,
     string: Option<String>,
 }
 
-impl FileHash {
+impl FileRef {
 
 }

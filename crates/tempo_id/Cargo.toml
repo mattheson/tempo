@@ -6,5 +6,6 @@ edition = "2021"
 [dependencies]
 autosurgeon.workspace = true
 serde.workspace = true
-ulid.workspace = true
-uuid.workspace = true
+
+ulid = { version = "1", features = ["serde"] }
+uuid = "1"

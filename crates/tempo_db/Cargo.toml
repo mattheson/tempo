@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tempo_misc.path = "../tempo_misc"
+tempo_misc.workspace = true
 
 anyhow.workspace = true
 sqlx.workspace = true

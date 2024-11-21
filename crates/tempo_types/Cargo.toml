@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tempo_id.path = "../tempo_id"
+tempo_id.workspace = true
 
 automerge.workspace = true
 autosurgeon.workspace = true

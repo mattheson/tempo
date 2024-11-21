@@ -23,7 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-src-tauri/test_assets/audio/**
-src-tauri/test_assets/ableton/**
-
-target/
+target
+.svelte-kit

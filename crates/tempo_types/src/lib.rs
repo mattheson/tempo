@@ -20,8 +20,10 @@ pub struct SessionData {
     Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
 )]
 pub struct ChannelInfo {
-    pub name: String,
     pub creator: Uuid,
+
+    pub name: String,
+
     pub hidden: bool,
 }
 

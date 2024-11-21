@@ -5543,6 +5543,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "tempo"
+version = "0.0.0-beta.0"
+dependencies = [
+ "clap",
+ "flate2",
+ "hex",
+ "infer",
+ "native-dialog",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-devtools",
+ "tauri-plugin-dialog",
+ "tauri-plugin-log",
+ "tauri-plugin-process",
+ "tauri-plugin-shell",
+ "tauri-plugin-sql",
+ "tauri-plugin-store",
+ "tempo_misc",
+ "time",
+ "walkdir",
+]
+
+[[package]]
 name = "tempo_db"
 version = "0.1.0"
 dependencies = [
@@ -5553,13 +5578,76 @@ dependencies = [
 ]
 
 [[package]]
+name = "tempo_fs_attachment"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "tempo_db",
+ "tempo_id",
+ "tempo_provider",
+ "tempo_types",
+]
+
+[[package]]
+name = "tempo_fs_channel"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "tempo_db",
+ "tempo_fs_note",
+ "tempo_id",
+ "tempo_provider",
+ "tempo_types",
+]
+
+[[package]]
+name = "tempo_fs_comment"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "tempo_db",
+ "tempo_id",
+ "tempo_provider",
+ "tempo_types",
+]
+
+[[package]]
+name = "tempo_fs_note"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "tempo_db",
+ "tempo_fs_attachment",
+ "tempo_fs_comment",
+ "tempo_id",
+ "tempo_provider",
+ "tempo_types",
+]
+
+[[package]]
 name = "tempo_fs_provider"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "tauri",
  "tempo_db",
+ "tempo_fs_session",
+ "tempo_id",
  "tempo_provider",
+ "tempo_types",
+ "tokio",
+]
+
+[[package]]
+name = "tempo_fs_session"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "tempo_db",
+ "tempo_fs_channel",
+ "tempo_id",
+ "tempo_provider",
+ "tempo_types",
 ]
 
 [[package]]
@@ -5593,33 +5681,14 @@ dependencies = [
  "anyhow",
  "tauri",
  "tempo_db",
+ "tempo_id",
  "tempo_types",
+ "tokio",
 ]
 
 [[package]]
-name = "tempo_tauri"
-version = "0.0.0-beta.0"
-dependencies = [
- "clap",
- "flate2",
- "hex",
- "infer",
- "native-dialog",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-devtools",
- "tauri-plugin-dialog",
- "tauri-plugin-log",
- "tauri-plugin-process",
- "tauri-plugin-shell",
- "tauri-plugin-sql",
- "tauri-plugin-store",
- "tempo_misc",
- "time",
- "walkdir",
-]
+name = "tempo_test"
+version = "0.1.0"
 
 [[package]]
 name = "tempo_types"
