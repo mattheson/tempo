@@ -1,0 +1,12 @@
+[package]
+name = "dawutils"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+quick-xml = { version = "^0.37", features = ["serialize"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+coreaudio-sys = "^0.2"
+core-foundation = "^0.10"
+objc = "^0.2"

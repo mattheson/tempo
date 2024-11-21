@@ -1144,6 +1144,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "dawutils"
+version = "0.1.0"
+dependencies = [
+ "core-foundation 0.10.0",
+ "coreaudio-sys",
+ "objc",
+ "quick-xml 0.37.1",
+]
+
+[[package]]
 name = "der"
 version = "0.7.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1443,19 +1453,6 @@ checksum = "4f2c92ceda6ceec50f43169f9ee8424fe2db276791afde7b2cd8bc084cb376ab"
 dependencies = [
  "log",
  "regex",
-]
-
-[[package]]
-name = "env_logger"
-version = "0.11.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e13fa619b91fb2381732789fc5de83b45675e882f66623b7d8cb4f643017018d"
-dependencies = [
- "anstream",
- "anstyle",
- "env_filter",
- "humantime",
- "log",
 ]
 
 [[package]]
@@ -2224,12 +2221,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 
 [[package]]
-name = "humantime"
-version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
-
-[[package]]
 name = "hyper"
 version = "0.14.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2571,15 +2562,6 @@ name = "itertools"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
-dependencies = [
- "either",
-]
-
-[[package]]
-name = "itertools"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
 dependencies = [
  "either",
 ]
@@ -3892,7 +3874,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81bddcdb20abf9501610992b6759a4c888aef7d1a7247ef75e2404275ac24af1"
 dependencies = [
  "anyhow",
- "itertools 0.12.1",
+ "itertools 0.11.0",
  "proc-macro2",
  "quote",
  "syn 2.0.87",
@@ -4822,6 +4804,8 @@ dependencies = [
  "sqlformat",
  "thiserror 1.0.69",
  "time",
+ "tokio",
+ "tokio-stream",
  "tracing",
  "url",
 ]
@@ -4861,6 +4845,7 @@ dependencies = [
  "sqlx-sqlite",
  "syn 2.0.87",
  "tempfile",
+ "tokio",
  "url",
 ]
 
@@ -5558,29 +5543,70 @@ dependencies = [
 ]
 
 [[package]]
-name = "tempo_tauri"
-version = "0.0.0-beta.0"
+name = "tempo_db"
+version = "0.1.0"
 dependencies = [
  "anyhow",
- "automerge",
+ "dashmap",
+ "sqlx",
+ "tempo_misc",
+]
+
+[[package]]
+name = "tempo_fs_provider"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "tauri",
+ "tempo_db",
+ "tempo_provider",
+]
+
+[[package]]
+name = "tempo_id"
+version = "0.1.0"
+dependencies = [
  "autosurgeon",
- "clap",
+ "serde",
+ "ulid",
+ "uuid",
+]
+
+[[package]]
+name = "tempo_misc"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
  "cocoa 0.26.0",
  "core-foundation 0.10.0",
  "coreaudio-sys",
- "dashmap",
- "env_logger",
+ "native-dialog",
+ "objc",
+ "sha2",
+ "tauri",
+]
+
+[[package]]
+name = "tempo_provider"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "tauri",
+ "tempo_db",
+ "tempo_types",
+]
+
+[[package]]
+name = "tempo_tauri"
+version = "0.0.0-beta.0"
+dependencies = [
+ "clap",
  "flate2",
  "hex",
  "infer",
- "log",
  "native-dialog",
- "objc",
- "quick-xml 0.37.1",
  "serde",
  "serde_json",
- "sha2",
- "sqlx",
  "tauri",
  "tauri-build",
  "tauri-plugin-devtools",
@@ -5590,12 +5616,19 @@ dependencies = [
  "tauri-plugin-shell",
  "tauri-plugin-sql",
  "tauri-plugin-store",
- "test-log",
+ "tempo_misc",
  "time",
- "tokio",
- "ulid",
- "uuid",
  "walkdir",
+]
+
+[[package]]
+name = "tempo_types"
+version = "0.1.0"
+dependencies = [
+ "automerge",
+ "autosurgeon",
+ "serde",
+ "tempo_id",
 ]
 
 [[package]]
@@ -5607,28 +5640,6 @@ dependencies = [
  "futf",
  "mac",
  "utf-8",
-]
-
-[[package]]
-name = "test-log"
-version = "0.2.16"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3dffced63c2b5c7be278154d76b479f9f9920ed34e7574201407f0b14e2bbb93"
-dependencies = [
- "env_logger",
- "test-log-macros",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "test-log-macros"
-version = "0.2.16"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5999e24eaa32083191ba4e425deb75cdf25efefabe5aaccb7446dd0d4122a3f5"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.87",
 ]
 
 [[package]]

@@ -1,0 +1,17 @@
+[package]
+name = "tempo_misc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow.workspace = true
+tauri.workspace = true
+sha2.workspace = true
+
+native-dialog = "0.7"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+coreaudio-sys = "^0.2"
+core-foundation = "^0.10"
+cocoa = "^0.26"
+objc = "^0.2"

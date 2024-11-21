@@ -1,0 +1,10 @@
+[package]
+name = "tempo_id"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+autosurgeon.workspace = true
+serde.workspace = true
+ulid.workspace = true
+uuid.workspace = true

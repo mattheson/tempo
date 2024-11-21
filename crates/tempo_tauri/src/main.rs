@@ -1,17 +1,11 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod misc;
 mod tempo;
-mod db;
-mod providers;
-mod notif;
-mod types;
-mod id;
 
 use std::path::PathBuf;
 
-use misc::fatal_error;
+use tempo_misc::fatal_error;
 // use tauri::Manager;
 
 #[cfg(dev)]

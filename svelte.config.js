@@ -10,7 +10,7 @@ const config = {
   kit: {
     adapter: adapter(),
     alias: {
-      '@bindings/': 'src-tauri/bindings'
+      '@bindings/': 'crates/tempo_types/bindings'
     }
   },
 };

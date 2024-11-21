@@ -2,10 +2,10 @@
 	"compilerOptions": {
 		"paths": {
 			"@bindings/": [
-				"../src-tauri/bindings"
+				"../crates/tempo_types/bindings"
 			],
 			"@bindings//*": [
-				"../src-tauri/bindings/*"
+				"../crates/tempo_types/bindings/*"
 			]
 		},
 		"rootDirs": [
