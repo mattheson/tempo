@@ -2,18 +2,14 @@ use std::collections::HashMap;
 
 use tempo_id::{Ulid, Uuid};
 
-/// Metadata about a session.
+/// Contains users 
 #[derive(
     Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
 )]
 pub struct SessionData {
     // name of the session
     pub name: String,
-
     pub users: HashMap<String, Uuid>,
-
-    #[autosurgeon(with = "autosurgeon::map_with_parseable_keys")]
-    pub channels: HashMap<Ulid, ChannelInfo>,
 }
 
 #[derive(

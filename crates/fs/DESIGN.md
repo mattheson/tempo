@@ -23,9 +23,9 @@ Shared folder layout is as follows:
 
 - `[folder]`: user-created directory, name can be anything
   - `tempo-session`: tempo directory, holds all data
-    - `tempo`: immutable metadata about this folder, json
+    - `info`: immutable metadata about this folder, json
     - `[uuid]`: data scoped to a user with this install ulid
-      - `[ulid]`: this user's latest copy of the `[ulid]` automerge document
+      - `[ulid]`: this user's latest copy of the `[ulid]` automerge document. this could be a channel metadata or note documents.
       - `session`: this user's latest copy of the session metadata
       - `data`: latest copy of this user's metadata
     - `files`: files referenced in this folder

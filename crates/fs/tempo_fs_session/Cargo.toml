@@ -12,3 +12,5 @@ tempo_types.workspace = true
 tempo_id.workspace = true
 
 anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true

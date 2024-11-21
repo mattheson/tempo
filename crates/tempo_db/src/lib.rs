@@ -29,11 +29,11 @@ impl DbManager {
 static DBS: LazyLock<DbManager> = LazyLock::new(DbManager::new);
 
 /// Handle to Tempo's sqlite database stored in the data directory.
-pub struct TempoDb {
+pub struct DbHandle {
     conn: PoolConnection<Sqlite>,
 }
 
-impl TempoDb {
+impl DbHandle {
     pub async fn new(db_path: &Path, namespace: &str) -> Result<Self> {
         Ok(Self {
             conn: DBS.get(db_path).await?.acquire().await?,
@@ -44,19 +44,18 @@ impl TempoDb {
 /*
 
 info -----
-sql schema number | install ulid | maybe other stuff
+install ulid | maybe other stuff
 
 folders -----
-id | ns | last scan time? | json meta of doc | last meta doc hash | last meta doc head
+id | ns | last scan time? | json meta of doc | last meta doc heads
 
 notes -----
-folder | channel | ulid | json | last doc hash | last head
+id | folder id | json | last doc hash | last head
 
 notifications ----
 type | folder | channel | note | comment
 
 users ----
-
 
 latter 3 optional
 

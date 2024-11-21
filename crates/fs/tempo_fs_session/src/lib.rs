@@ -1,4 +1,6 @@
 mod id;
+mod meta;
+
 pub use id::FsSessionId;
 
 pub struct FsSession {}

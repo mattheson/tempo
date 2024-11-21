@@ -8,7 +8,7 @@ pub trait TempoProvider: Sized {
 
     /// Initializes this provider.
     fn new(
-        db_handle: tempo_db::TempoDb,
+        db_handle: tempo_db::DbHandle,
         app_handle: tauri::AppHandle,
         tokio_handle: tokio::runtime::Handle,
     ) -> anyhow::Result<Self>;

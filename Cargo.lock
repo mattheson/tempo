@@ -5643,6 +5643,8 @@ name = "tempo_fs_session"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "serde",
+ "serde_json",
  "tempo_db",
  "tempo_fs_channel",
  "tempo_id",
