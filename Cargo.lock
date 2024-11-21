@@ -1130,20 +1130,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dashmap"
-version = "6.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5041cc499144891f3790297212f32a74fb938e5136a14943f338ef9e0ae276cf"
-dependencies = [
- "cfg-if",
- "crossbeam-utils",
- "hashbrown 0.14.5",
- "lock_api",
- "once_cell",
- "parking_lot_core",
-]
-
-[[package]]
 name = "dawutils"
 version = "0.1.0"
 dependencies = [
@@ -4748,6 +4734,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "sql"
+version = "0.0.0"
+dependencies = [
+ "futures-core",
+ "indexmap 2.6.0",
+ "log",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.3",
+ "time",
+ "tokio",
+]
+
+[[package]]
 name = "sqlformat"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5402,25 +5405,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-plugin-sql"
-version = "2.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb7022ccbcd1799dcf7acb97805f1a5fc7f046b4cf67518296a2e8921bab613a"
-dependencies = [
- "futures-core",
- "indexmap 2.6.0",
- "log",
- "serde",
- "serde_json",
- "sqlx",
- "tauri",
- "tauri-plugin",
- "thiserror 1.0.69",
- "time",
- "tokio",
-]
-
-[[package]]
 name = "tauri-plugin-store"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5553,6 +5537,7 @@ dependencies = [
  "native-dialog",
  "serde",
  "serde_json",
+ "sql",
  "tauri",
  "tauri-build",
  "tauri-plugin-devtools",
@@ -5560,7 +5545,6 @@ dependencies = [
  "tauri-plugin-log",
  "tauri-plugin-process",
  "tauri-plugin-shell",
- "tauri-plugin-sql",
  "tauri-plugin-store",
  "tempo_misc",
  "time",
@@ -5568,21 +5552,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "tempo_db"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "dashmap",
- "sqlx",
- "tempo_misc",
-]
-
-[[package]]
 name = "tempo_fs_attachment"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "tempo_db",
+ "sql",
  "tempo_id",
  "tempo_provider",
  "tempo_types",
@@ -5593,7 +5567,7 @@ name = "tempo_fs_channel"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "tempo_db",
+ "sql",
  "tempo_fs_note",
  "tempo_id",
  "tempo_provider",
@@ -5605,7 +5579,7 @@ name = "tempo_fs_comment"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "tempo_db",
+ "sql",
  "tempo_id",
  "tempo_provider",
  "tempo_types",
@@ -5616,7 +5590,7 @@ name = "tempo_fs_note"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "tempo_db",
+ "sql",
  "tempo_fs_attachment",
  "tempo_fs_comment",
  "tempo_id",
@@ -5629,8 +5603,8 @@ name = "tempo_fs_provider"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "sql",
  "tauri",
- "tempo_db",
  "tempo_fs_session",
  "tempo_id",
  "tempo_provider",
@@ -5645,7 +5619,7 @@ dependencies = [
  "anyhow",
  "serde",
  "serde_json",
- "tempo_db",
+ "sql",
  "tempo_fs_channel",
  "tempo_id",
  "tempo_provider",
@@ -5681,8 +5655,8 @@ name = "tempo_provider"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "sql",
  "tauri",
- "tempo_db",
  "tempo_id",
  "tempo_types",
  "tokio",

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tempo_db.workspace = true
+sql.workspace = true
 tempo_types.workspace = true
 tempo_id.workspace = true
 

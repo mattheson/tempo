@@ -11,6 +11,7 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tempo_misc.workspace = true
+sql.workspace = true
 
 tauri = { workspace = true, default_features = false, features = ["protocol-asset", "devtools"] }
 serde.workspace = true
@@ -21,7 +22,6 @@ tauri-plugin-process = "^2"
 tauri-plugin-shell = "^2"
 tauri-plugin-log = "^2"
 tauri-plugin-store = "^2"
-tauri-plugin-sql = { version = "^2", features = ["sqlite"] }
 tauri-plugin-devtools = "^2"
 
 flate2 = "1"

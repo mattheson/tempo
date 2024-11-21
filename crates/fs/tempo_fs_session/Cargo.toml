@@ -6,7 +6,7 @@ rust-version.workspace = true
 
 [dependencies]
 tempo_fs_channel.workspace = true
-tempo_db.workspace = true
+sql.workspace = true
 tempo_provider.workspace = true
 tempo_types.workspace = true
 tempo_id.workspace = true

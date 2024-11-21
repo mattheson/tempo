@@ -1,12 +1,16 @@
 [workspace]
 resolver = "2"
+package.license = "GPL-3.0-only"
+package.edition = "2021"
 package.rust-version = "1.82.0"
+package.repository = "https://github.com/mattheson/tempo"
+package.authors = ["Matt Taniguchi"]
 
 members = [
     "crates/dawutils",
     "crates/tempo",
+    "crates/sql",
 
-    "crates/tempo_db",
     "crates/tempo_id",
     "crates/tempo_misc",
     "crates/tempo_provider",
@@ -25,10 +29,10 @@ members = [
 dawutils.path = "crates/dawutils"
 tempo.path = "crates/tempo"
 
-tempo_db.path = "crates/tempo_db"
 tempo_id.path = "crates/tempo_id"
 tempo_misc.path = "crates/tempo_misc"
 tempo_provider.path = "crates/tempo_provider"
+sql.path = "crates/sql"
 tempo_test.path = "crates/tempo_test"
 tempo_types.path = "crates/tempo_types"
 
@@ -41,7 +45,6 @@ tempo_fs_session.path = "crates/fs/tempo_fs_session"
 
 anyhow = "1"
 tauri = { version = "2", features = ["protocol-asset", "devtools"] }
-sqlx = { version = "0.8", features = ["sqlite"] }
 tokio = { version = "1", features = ["rt"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

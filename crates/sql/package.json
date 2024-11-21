@@ -1,12 +1,11 @@
 {
-  "name": "@tauri-apps/plugin-sql",
-  "version": "2.0.1",
-  "description": "Interface with SQL databases",
+  "name": "sql",
+  "description": "Vendored version of Tauri's SQL plugin.",
   "license": "MIT OR Apache-2.0",
   "authors": [
-    "Tauri Programme within The Commons Conservancy"
+    "Tauri Programme within The Commons Conservancy",
+    "Matt Taniguchi"
   ],
-  "repository": "https://github.com/tauri-apps/plugins-workspace",
   "type": "module",
   "types": "./dist-js/index.d.ts",
   "main": "./dist-js/index.cjs",
@@ -25,6 +24,6 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@tauri-apps/api": "^2.0.0"
+    "@tauri-apps/api": "^2"
   }
 }
