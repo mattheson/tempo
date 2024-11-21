@@ -1,0 +1,23 @@
+{
+  "identifier": "tempo",
+  "description": "permissions for tempo frontend",
+  "local": true,
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "core:app:default",
+    "core:resources:default",
+    "core:menu:default",
+    "core:tray:default",
+    "core:window:allow-show",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "dialog:allow-message",
+    "process:allow-exit",
+    "shell:allow-open",
+    "store:default",
+    "sql:default"
+  ]
+}

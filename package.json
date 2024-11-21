@@ -1,7 +1,7 @@
 {
   "name": "tempo",
   "private": true,
-  "version": "0.0.0-alpha.1",
+  "version": "0.0.0-beta.0",
   "license": "GPL-3.0-only",
   "type": "module",
   "scripts": {
@@ -17,8 +17,7 @@
     "@tauri-apps/plugin-shell": "^2",
     "@tauri-apps/plugin-sql": "^2",
     "@tauri-apps/plugin-store": "^2",
-    "ulidx": "^2.4.1",
-    "use-immer": "^0.10.0"
+    "ulidx": "^2"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",

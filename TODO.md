@@ -1,9 +1,11 @@
 # TODOs
 
 # v0.0.0-beta.0
-This release is focused on improving internals along with lots of refactoring.
+This is a partial rewrite of Tempo aimed at establishing long-term stability for the project.
 
 - [x] switch to anyhow
+- [ ] establish concrete data model
+  - [ ] importantly including how schema changes will work
 - [ ] set up frontend sql access
   - just use tauri sql plugin for now
 - [ ] switch to sqlx
@@ -16,7 +18,6 @@ This release is focused on improving internals along with lots of refactoring.
   - reactive updates:
     - emit rowid or something?
 - [ ] write tests throughout tempo
-- [ ] set up sql data model
 - [ ] remove sql from shared data
-- [ ] finalize folder structure changes
 - [ ] rewrite frontend in svelte, focus on theming and actual good ui development from the start
+  - this is going to take a long time, but is probably worth it
