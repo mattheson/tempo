@@ -9,8 +9,8 @@ package.authors = ["Matt Taniguchi"]
 members = [
     "crates/dawutils",
     "crates/tempo",
-    "crates/sql",
 
+    "crates/tempo_db",
     "crates/tempo_id",
     "crates/tempo_misc",
     "crates/tempo_provider",
@@ -29,10 +29,10 @@ members = [
 dawutils.path = "crates/dawutils"
 tempo.path = "crates/tempo"
 
+tempo_db.path = "crates/tempo_db"
 tempo_id.path = "crates/tempo_id"
 tempo_misc.path = "crates/tempo_misc"
 tempo_provider.path = "crates/tempo_provider"
-sql.path = "crates/sql"
 tempo_test.path = "crates/tempo_test"
 tempo_types.path = "crates/tempo_types"
 
@@ -44,12 +44,11 @@ tempo_fs_provider.path = "crates/fs/tempo_fs_provider"
 tempo_fs_session.path = "crates/fs/tempo_fs_session"
 
 anyhow = "1"
+rusqlite = { version = "0.32", features = ["bundled"] }
 tauri = { version = "2", features = ["protocol-asset", "devtools"] }
 tokio = { version = "1", features = ["rt"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-automerge = "0.5"
-autosurgeon = "0.8"
 log = "0.4"
 sha2 = "0.10"
 test-log = "0.2"

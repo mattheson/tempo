@@ -54,27 +54,6 @@ impl<'de> serde::Deserialize<'de> for Ulid {
     }
 }
 
-impl autosurgeon::Hydrate for Ulid {
-    fn hydrate_bytes(_bytes: &[u8]) -> Result<Self, autosurgeon::HydrateError> {
-        Ok(Ulid(ulid::Ulid::from_bytes(
-            _bytes.try_into().map_err(|_| {
-                autosurgeon::HydrateError::unexpected(
-                    "16 bytes for ulid",
-                    format!("{} bytes", _bytes.len()),
-                )
-            })?,
-        )))
-    }
-}
-
-impl autosurgeon::Reconcile for Ulid {
-    type Key<'a> = autosurgeon::reconcile::NoKey;
-
-    fn reconcile<R: autosurgeon::Reconciler>(&self, mut reconciler: R) -> Result<(), R::Error> {
-        reconciler.bytes(self.0.to_bytes())
-    }
-}
-
 impl std::fmt::Display for Ulid {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.0)
@@ -141,30 +120,10 @@ impl<'de> serde::Deserialize<'de> for Uuid {
     }
 }
 
-impl autosurgeon::Hydrate for Uuid {
-    fn hydrate_bytes(_bytes: &[u8]) -> Result<Self, autosurgeon::HydrateError> {
-        Ok(Uuid(uuid::Uuid::from_bytes(
-            _bytes.try_into().map_err(|_| {
-                autosurgeon::HydrateError::unexpected(
-                    "bytes for uuid",
-                    format!("{} bytes", _bytes.len()),
-                )
-            })?,
-        )))
-    }
-}
-
-impl autosurgeon::Reconcile for Uuid {
-    type Key<'a> = autosurgeon::reconcile::NoKey;
-
-    fn reconcile<R: autosurgeon::Reconciler>(&self, mut reconciler: R) -> Result<(), R::Error> {
-        reconciler.bytes(self.0.as_bytes())
-    }
-}
 
 pub struct FileRef {
     sha256_bytes: Vec<u8>,
-    string: Option<String>,
+    sha256_string: Option<String>,
 }
 
 impl FileRef {

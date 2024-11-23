@@ -2,130 +2,148 @@ use std::collections::HashMap;
 
 use tempo_id::{Ulid, Uuid};
 
-/// Contains users 
-#[derive(
-    Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
-)]
-pub struct SessionData {
-    // name of the session
-    pub name: String,
-    pub users: HashMap<String, Uuid>,
-}
 
-#[derive(
-    Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
-)]
-pub struct ChannelInfo {
-    pub creator: Uuid,
+// #[derive(Debug, serde::Serialize)]
+// pub struct SessionData {
+//     // name of the session
+//     pub name: String,
+//     pub users: HashMap<String, Uuid>,
+// }
 
-    pub name: String,
+// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+// pub enum Note {
+//     Channel(),
+// }
 
-    pub hidden: bool,
-}
+// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+// pub struct ChannelDesc {
+//     pub name: String
+// }
 
-#[derive(
-    Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
-)]
-pub struct NoteData {
-    pub sender: Uuid,
+// /// Contains users
+// #[derive(
+//     Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
+// )]
+// pub struct SessionData {
+//     // name of the session
+//     pub name: String,
+//     pub users: HashMap<String, Uuid>,
+// }
 
-    pub body: String,
-    pub parents: Vec<Ulid>,
+// #[derive(
+//     Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
+// )]
+// pub struct ChannelInfo {
+//     pub creator: Uuid,
 
-    pub attachment: Option<Attachment>,
+//     pub name: String,
 
-    #[autosurgeon(with = "autosurgeon::map_with_parseable_keys")]
-    pub comments: HashMap<Ulid, RepliableComment>,
+//     pub hidden: bool,
+// }
 
-    pub hidden: bool,
-}
+// #[derive(
+//     Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
+// )]
+// pub struct NoteData {
+//     pub sender: Uuid,
 
-/// Repliable comment on a note.
-/// Only one level of replies is supported.
-#[derive(
-    Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
-)]
-pub struct RepliableComment {
-    pub comment: Comment,
+//     pub body: String,
+//     pub parents: Vec<Ulid>,
 
-    #[autosurgeon(with = "autosurgeon::map_with_parseable_keys")]
-    pub replies: HashMap<Ulid, Comment>,
-}
+//     pub attachment: Option<Attachment>,
 
-#[derive(
-    Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
-)]
-pub struct Comment {
-    pub sender: Uuid,
-    pub body: String,
+//     #[autosurgeon(with = "autosurgeon::map_with_parseable_keys")]
+//     pub comments: HashMap<Ulid, RepliableComment>,
 
-    pub hidden: bool,
-}
+//     pub hidden: bool,
+// }
 
-/// An attachment on a note.
-#[derive(
-    Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
-)]
-pub enum Attachment {
-    AbletonProject(AbletonProjectAttachment),
-    Audio(AudioAttachment),
-}
+// /// Repliable comment on a note.
+// /// Only one level of replies is supported.
+// #[derive(
+//     Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
+// )]
+// pub struct RepliableComment {
+//     pub comment: Comment,
 
-#[derive(
-    Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
-)]
-pub struct AbletonProjectAttachment {
-    pub title: String,
+//     #[autosurgeon(with = "autosurgeon::map_with_parseable_keys")]
+//     pub replies: HashMap<Ulid, Comment>,
+// }
 
-    // hash of .als
-    pub hash: String,
+// #[derive(
+//     Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
+// )]
+// pub struct Comment {
+//     pub sender: Uuid,
+//     pub body: String,
 
-    // hash of render of project file
-    pub render_hash: Option<String>,
-}
+//     pub hidden: bool,
+// }
 
-#[derive(
-    Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
-)]
-pub struct AudioAttachment {
-    pub title: String,
-    pub hash: String,
-}
+// /// An attachment on a note.
+// #[derive(
+//     Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
+// )]
+// pub enum Attachment {
+//     AbletonProject(AbletonProjectAttachment),
+//     Audio(AudioAttachment),
+// }
 
-/// A request from the frontend to make a new note.
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct NewNote {
-    pub body: String,
-    pub parents: Vec<Ulid>,
-    pub attachment: Option<NewAttachment>,
-}
+// #[derive(
+//     Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
+// )]
+// pub struct AbletonProjectAttachment {
+//     pub title: String,
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub enum NewAttachment {
-    AbletonProject(NewAbletonProjectAttachment),
-    Audio(NewAudioAttachment),
-}
+//     // hash of .als
+//     pub hash: String,
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct NewAbletonProjectAttachment {
-    pub title: String,
-    pub path: std::path::PathBuf,
-    pub render: Option<std::path::PathBuf>,
-}
+//     // hash of render of project file
+//     pub render_hash: Option<String>,
+// }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct NewAudioAttachment {
-    pub title: String,
-    pub path: std::path::PathBuf,
-}
+// #[derive(
+//     Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
+// )]
+// pub struct AudioAttachment {
+//     pub title: String,
+//     pub hash: String,
+// }
 
-/// A request from the frontend to create a comment on a note.
-#[derive(
-    Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
-)]
-pub struct NewComment {
-    // this ulid is a key within the note's comments map
-    pub reply_ulid: Option<String>,
+// /// A request from the frontend to make a new note.
+// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+// pub struct NewNote {
+//     pub body: String,
+//     pub parents: Vec<Ulid>,
+//     pub attachment: Option<NewAttachment>,
+// }
 
-    pub body: String,
-}
+// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+// pub enum NewAttachment {
+//     AbletonProject(NewAbletonProjectAttachment),
+//     Audio(NewAudioAttachment),
+// }
+
+// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+// pub struct NewAbletonProjectAttachment {
+//     pub title: String,
+//     pub path: std::path::PathBuf,
+//     pub render: Option<std::path::PathBuf>,
+// }
+
+// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+// pub struct NewAudioAttachment {
+//     pub title: String,
+//     pub path: std::path::PathBuf,
+// }
+
+// /// A request from the frontend to create a comment on a note.
+// #[derive(
+//     Debug, serde::Serialize, serde::Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate,
+// )]
+// pub struct NewComment {
+//     // this ulid is a key within the note's comments map
+//     pub reply_ulid: Option<String>,
+
+//     pub body: String,
+// }

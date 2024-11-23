@@ -5,11 +5,11 @@ edition = "2021"
 rust-version.workspace = true
 
 [dependencies]
+tempo_db.workspace = true
 tempo_fs_attachment.workspace = true
 tempo_fs_comment.workspace = true
 
 tempo_provider.workspace = true
-sql.workspace = true
 tempo_types.workspace = true
 tempo_id.workspace = true
 

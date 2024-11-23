@@ -6,6 +6,4 @@ edition = "2021"
 [dependencies]
 tempo_id.workspace = true
 
-automerge.workspace = true
-autosurgeon.workspace = true
 serde.workspace = true

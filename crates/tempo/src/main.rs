@@ -68,14 +68,14 @@ fn main() {
     //     std::process::exit(1);
     // }
 
-    let builder = tauri::Builder::default().plugin(tauri_plugin_sql::Builder::new().build());
+    let builder = tauri::Builder::default();
 
     let result = builder
         .plugin(devtools)
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::default().build())
-        .plugin(tauri_plugin_sql::Builder::new().build())
+        .plugin(sql::Builder::new().build())
         .setup(|app| {
             let window =
                 tauri::WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::App("/".into()))

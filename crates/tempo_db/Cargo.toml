@@ -1,0 +1,14 @@
+[package]
+name = "tempo_db"
+version = "0.1.0"
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+rusqlite.workspace = true
+
+dashmap = "6"

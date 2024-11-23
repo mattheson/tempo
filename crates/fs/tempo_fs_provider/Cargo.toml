@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tempo_fs_session.path = "../tempo_fs_session"
+tempo_db.workspace = true
+tempo_fs_session.workspace = true
 
 tempo_provider.workspace = true
-sql.workspace = true
 tempo_types.workspace = true
 tempo_id.workspace = true
 
