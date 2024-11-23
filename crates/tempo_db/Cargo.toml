@@ -12,3 +12,8 @@ anyhow.workspace = true
 rusqlite.workspace = true
 
 dashmap = "6"
+
+[dev-dependencies]
+env_logger.workspace = true
+test-log.workspace = true
+tempo_test.workspace = true
