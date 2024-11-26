@@ -8,8 +8,8 @@
 <h1 class="text-4xl flex px-10 pb-10">Download</h1>
 <div class="px-10">
   <p>
-    <b>Warning:</b> Tempo is still in an early prototype phase. Expect that everything
-    might be broken! It works on my computer but I can't guarantee it will on yours...
+    <b>Warning:</b> Tempo is still in an early prototype phase.
+    <b>Be sure to create separate copies of your projects!</b>
   </p>
   <p>
     Join the <a
@@ -18,9 +18,8 @@
     > to share feedback/bug reports/etc! All feedback is greatly appreciated!
   </p>
   <br />
-  You can try Tempo now to see how it fits into your workflow by yourself or with
-  your collaborators. Tempo has lots of missing features and lots of bugs.
-  <p><b>Be sure to create separate copies of your projects!</b></p>
+  You can try Tempo now to see how it fits into your workflow by yourself/with collaborators.
+  Tempo has lots of missing features and lots of bugs.
 </div>
 
 <div class="flex flex-col py-12 px-10">
