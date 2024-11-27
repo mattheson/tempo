@@ -92,6 +92,12 @@ impl serde::Serialize for Uuid {
     }
 }
 
+impl std::fmt::Display for Uuid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0.to_string())
+    }
+}
+
 struct UuidVisitor;
 
 impl<'de> serde::de::Visitor<'de> for UuidVisitor {
@@ -119,7 +125,6 @@ impl<'de> serde::Deserialize<'de> for Uuid {
         deserializer.deserialize_byte_buf(UuidVisitor)
     }
 }
-
 
 pub struct FileRef {
     sha256_bytes: Vec<u8>,

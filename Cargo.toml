@@ -17,12 +17,7 @@ members = [
     "crates/tempo_test",
     "crates/tempo_types",
 
-    "crates/fs/tempo_fs_attachment",
-    "crates/fs/tempo_fs_channel",
-    "crates/fs/tempo_fs_comment",
-    "crates/fs/tempo_fs_note",
-    "crates/fs/tempo_fs_provider",
-    "crates/fs/tempo_fs_session",
+    "crates/tempo_fs_provider",
 ]
 
 [workspace.dependencies]
@@ -36,12 +31,7 @@ tempo_provider.path = "crates/tempo_provider"
 tempo_test.path = "crates/tempo_test"
 tempo_types.path = "crates/tempo_types"
 
-tempo_fs_attachment.path = "crates/fs/tempo_fs_attachment"
-tempo_fs_channel.path = "crates/fs/tempo_fs_channel"
-tempo_fs_comment.path = "crates/fs/tempo_fs_comment"
-tempo_fs_note.path = "crates/fs/tempo_fs_note"
-tempo_fs_provider.path = "crates/fs/tempo_fs_provider"
-tempo_fs_session.path = "crates/fs/tempo_fs_session"
+tempo_fs_provider.path = "crates/tempo_fs_provider"
 
 anyhow = "1"
 rusqlite = { version = "0.32", features = ["bundled"] }

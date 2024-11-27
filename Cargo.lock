@@ -4762,55 +4762,10 @@ dependencies = [
  "dashmap",
  "env_logger",
  "rusqlite",
+ "tempo_id",
  "tempo_test",
  "test-log",
-]
-
-[[package]]
-name = "tempo_fs_attachment"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "tempo_db",
- "tempo_id",
- "tempo_provider",
- "tempo_types",
-]
-
-[[package]]
-name = "tempo_fs_channel"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "tempo_db",
- "tempo_fs_note",
- "tempo_id",
- "tempo_provider",
- "tempo_types",
-]
-
-[[package]]
-name = "tempo_fs_comment"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "tempo_db",
- "tempo_id",
- "tempo_provider",
- "tempo_types",
-]
-
-[[package]]
-name = "tempo_fs_note"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "tempo_db",
- "tempo_fs_attachment",
- "tempo_fs_comment",
- "tempo_id",
- "tempo_provider",
- "tempo_types",
+ "tokio",
 ]
 
 [[package]]
@@ -4820,25 +4775,9 @@ dependencies = [
  "anyhow",
  "tauri",
  "tempo_db",
- "tempo_fs_session",
  "tempo_id",
- "tempo_provider",
  "tempo_types",
  "tokio",
-]
-
-[[package]]
-name = "tempo_fs_session"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "serde",
- "serde_json",
- "tempo_db",
- "tempo_fs_channel",
- "tempo_id",
- "tempo_provider",
- "tempo_types",
 ]
 
 [[package]]

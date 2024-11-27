@@ -23,10 +23,16 @@ Shared folder layout is as follows:
 
 - `[folder]`: user-created directory, name can be anything
   - `tempo-session`: tempo directory, holds all data
-    - `info`: immutable metadata about this folder, json
+    - `info`: immutable metadata about this folder, json, created on creation
     - `[uuid]`: data scoped to a user with this install ulid
-      - `[ulid]`: this user's latest copy of the `[ulid]` automerge document. this could be a channel metadata or note documents.
+      - `[hex counter]`: a note
       - `session`: this user's latest copy of the session metadata
       - `data`: latest copy of this user's metadata
     - `files`: files referenced in this folder
-      - `[sha256]`: a file
+      - `[sha256]`: a file with a file header
+
+- set in stone for new design
+  - uuid with incrementing notes
+    - when reindexing, compare current number in directory to previous known number
+    - this number will always increase
+    - say we have a previous known number of notes

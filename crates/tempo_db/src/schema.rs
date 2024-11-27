@@ -1,44 +1,26 @@
-use rusqlite::Connection;
-
-/*
-
-misc
-schema number | uuid | frontend kv store
-
-sessions
-id | provider | provider id | name
-
-notes
-id | latest (id of latest edit) | folder id | provider note id | creator uuid | channel note id (optional) | new (bool)
-
-ancestry
-parent id | child id
-
-plugin_ids
-id | format-specific id | name | vendor
-
- */
+use rusqlite::{Connection, OptionalExtension};
 
 pub fn load(conn: &mut Connection) -> anyhow::Result<()> {
+    //
     Ok(())
 }
 
-const SQL_SCHEMA: u32 = 0;
-
-pub fn get_schema(conn: &mut Connection) -> anyhow::Result<u32> {
-    Ok(conn.query_row("SELECT schema FROM misc", [], |row| row.get(0))?)
+pub fn get_schema(conn: &mut Connection) -> anyhow::Result<Option<u32>> {
+    Ok(conn
+        .query_row("SELECT schema FROM misc", [], |row| row.get(0))
+        .optional()?)
 }
 
-pub fn schema_0(conn: &mut Connection) -> anyhow::Result<()> {
-    conn.execute(
-        r#"
-
+pub fn setup_schema_0(conn: &mut Connection) -> anyhow::Result<()> {
+    conn.execute(r#"
+ 
 CREATE TABLE IF NOT EXISTS misc (
+    id INTEGER PRIMARY KEY CHECK (id = 0),
     schema INTEGER NOT NULL,
     uuid TEXT NOT NULL,
 
     -- json store for frontend
-    store BLOB
+    store TEXT
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
@@ -91,6 +73,7 @@ CREATE TABLE IF NOT EXISTS plugin_ids (
     vendor TEXT NOT NULL
 );
 
+/*
 CREATE TRIGGER IF NOT EXISTS check_no_cycles 
 AFTER INSERT ON ancestry
 BEGIN
@@ -103,11 +86,10 @@ BEGIN
         
         UNION ALL
         
-        -- Recursively follow the chain
         SELECT cc.original_parent, a.child, cc.depth + 1
         FROM cycle_check cc
         JOIN ancestry a ON a.parent = cc.current_node
-        WHERE depth < (SELECT COUNT(*) FROM notes) -- Prevent infinite recursion
+        WHERE depth < (SELECT COUNT(*) FROM notes)
     )
 
     SELECT RAISE(ROLLBACK, 'Cycle detected in ancestry')
@@ -117,18 +99,22 @@ BEGIN
         WHERE current_node = original_parent
     );
 END;
+*/
 
-    "#,
-        [],
-    )?;
+    "#, [])?;
+    let mut stmt = conn.prepare(
+        r#"
+INSERT INTO misc (schema, uuid) VALUES (?1, ?2);
+    "#)?;
+    stmt.execute(rusqlite::params![0, tempo_id::Uuid::new().to_string()])?;
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test_log::test;
     use tempo_test::get_temp_dir;
+    use test_log::test;
 
     #[test]
     pub fn create_db() {

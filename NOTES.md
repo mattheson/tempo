@@ -82,3 +82,16 @@ just use a static for all connections
   - comments are shifted towards text replies to notes
 - editing of notes
 - hiding of notes
+
+# more data model
+maybe can shift design closer to something like automerge
+part of me thinks this is kind of reinventing the wheel but maybe it's warranted here
+ultimately automerge has worked and will stick with it if this is too complicated
+thinking of copying automerge's design but shifting it to be tempo specific
+
+lamport clocks for changes
+automerge changes can be sets of operations, operations are atoms
+in tempo changes will probably be the atoms
+
+should a 'change' be a 'note'? probably not
+would like mutability of notes
