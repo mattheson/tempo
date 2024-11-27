@@ -1,9 +1,10 @@
 use std::{
+    fs,
     io::Read,
     path::{Path, PathBuf},
 };
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use sha2::{Digest, Sha256};
 use tauri::{AppHandle, Manager};
 
@@ -148,4 +149,165 @@ pub fn is_sha256(s: &str) -> bool {
 /// Extracts the first two characters from a ulid's hash part
 pub fn get_ulid_chars(ulid: &str) -> String {
     ulid[10..=11].into()
+}
+
+/// A unique directory within a directory.
+pub struct UniqueDir {
+    pub name: String,
+    pub path: PathBuf,
+}
+
+impl UniqueDir {
+    pub fn new<P>(dir: P, name: &str) -> anyhow::Result<Self>
+    where
+        P: AsRef<Path>,
+    {
+        fs::create_dir_all(dir.as_ref())
+            .context("Failed to create missing parent directory for UniqueDir")?;
+
+        let create = |p: &Path| match fs::create_dir(p) {
+            Ok(()) => Ok(true),
+            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => Ok(false),
+            Err(e) => Err(e),
+        };
+
+        let mut path = dir.as_ref().join(name);
+
+        if create(&path)? {
+            Ok(Self {
+                name: name.to_string(),
+                path,
+            })
+        } else {
+            let mut count = 1usize;
+            loop {
+                let curr_name = format!("{name}-{count}");
+                path = dir.as_ref().join(&curr_name);
+
+                if create(&path)? {
+                    break Ok(Self {
+                        name: curr_name,
+                        path,
+                    });
+                }
+
+                count += 1;
+            }
+        }
+    }
+}
+
+/// A unique file within a directory.
+pub struct UniqueFile {
+    pub filename: String,
+    pub path: PathBuf,
+    pub file: fs::File,
+}
+
+impl UniqueFile {
+    pub fn new<P>(dir: P, filename: &str) -> anyhow::Result<Self>
+    where
+        P: AsRef<Path>,
+    {
+        let mut path = dir.as_ref().join(filename);
+
+        if !fs::exists(&path)? {
+            Ok(Self {
+                filename: filename.to_string(),
+                file: fs::File::create_new(&path)?,
+                path,
+            })
+        } else {
+            let (base, ext) = extract_file_extension(filename);
+
+            let mut count = 1usize;
+            loop {
+                let curr_filename = format!("{base}-{count}{}", ext.as_deref().unwrap_or(""));
+                path = dir.as_ref().join(&curr_filename);
+
+                if !path.exists() {
+                    break Ok(Self {
+                        filename: curr_filename,
+                        file: fs::File::create_new(&path)?,
+                        path,
+                    });
+                }
+
+                count += 1;
+            }
+        }
+    }
+
+    pub fn path(&self) -> &Path {
+        &self.path
+    }
+
+    pub fn filename(&self) -> &str {
+        &self.filename
+    }
+
+    pub fn file(&mut self) -> &mut fs::File {
+        &mut self.file
+    }
+}
+
+pub struct TempDir {
+    path: std::path::PathBuf,
+    persist: bool,
+    save_on_panic: bool,
+    panic_if_err: bool,
+}
+
+impl TempDir {
+    /// Gets a new temporary directory.
+    pub fn new<P>(parent_dir: P, prefix: &str) -> anyhow::Result<Self>
+    where
+        P: AsRef<std::path::Path>,
+    {
+        let UniqueDir { name: _, path } = UniqueDir::new(parent_dir, prefix)?;
+
+        log::info!("Created a temporary directory: {}", path_to_str(&path));
+
+        Ok(Self {
+            path,
+            persist: false,
+            save_on_panic: false,
+            panic_if_err: true,
+        })
+    }
+
+    pub fn persist(&mut self) {
+        self.persist = true
+    }
+
+    /// Does not delete this temporary directory when a panic occurs.
+    pub fn save_on_panic(&mut self) {
+        self.save_on_panic = true
+    }
+
+    /// Panics if an error is encountered when deleting this temporary directory when `Drop`ping.
+    pub fn panic_if_err(&mut self) {
+        self.panic_if_err = true
+    }
+
+    pub fn path(&self) -> &Path {
+        &self.path
+    }
+}
+
+impl Drop for TempDir {
+    fn drop(&mut self) {
+        if !((std::thread::panicking() && self.save_on_panic) || self.persist) {
+            match std::fs::remove_dir_all(&self.path) {
+                Ok(()) => log::info!("Removed temporary directory at {}", path_to_str(&self.path)),
+                Err(e) => {
+                    if self.panic_if_err {
+                        panic!("Error while deleting temporary directory: {}", e)
+                    } else {
+                        log::error!("Error while deleting temporary directory: {}", e)
+                    }
+                }
+            }
+        }
+    }
 }

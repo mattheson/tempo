@@ -1,3 +1,3 @@
 File sync (fs) provider for Tempo.
 
-This provider achieves persistance through sync services.
+This provider reads and writes to directories, which users can share using third-party file sync services.

@@ -74,8 +74,6 @@ fn main() {
         .plugin(devtools)
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_store::Builder::default().build())
-        .plugin(sql::Builder::new().build())
         .setup(|app| {
             let window =
                 tauri::WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::App("/".into()))

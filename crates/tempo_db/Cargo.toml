@@ -8,11 +8,14 @@ repository.workspace = true
 authors.workspace = true
 
 [dependencies]
+tempo_misc.workspace = true
 tempo_id.workspace = true
 
 anyhow.workspace = true
+log.workspace = true
 rusqlite.workspace = true
 tokio.workspace = true
+serde_json.workspace = true
 
 dashmap = "6"
 

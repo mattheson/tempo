@@ -5,6 +5,7 @@ edition = "2021"
 rust-version.workspace = true
 
 [dependencies]
+tempo_misc.workspace = true
+
 anyhow.workspace = true
 log.workspace = true
-tempdir.workspace = true

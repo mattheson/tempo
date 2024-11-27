@@ -7,4 +7,4 @@ edition = "2021"
 serde.workspace = true
 
 ulid = { version = "1", features = ["serde"] }
-uuid = "1"
+uuid = { version = "1", features = ["v4"] }

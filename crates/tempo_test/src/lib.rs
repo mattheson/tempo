@@ -1,13 +1,13 @@
-pub fn get_temp_dir(prefix: &str) -> anyhow::Result<tempdir::TempDir> {
+pub fn get_temp_dir(prefix: &str) -> anyhow::Result<tempo_misc::TempDir> {
     let tests_dir = std::path::PathBuf::from(env!("CARGO_WORKSPACE_DIR")).join("tests");
 
     if !tests_dir.exists() {
         std::fs::create_dir_all(&tests_dir)?;
     }
 
-    let dir = tempdir::TempDir::new_in(&tests_dir, prefix)?;
+    let mut temp_dir = tempo_misc::TempDir::new(&tests_dir, prefix)?;
+    temp_dir.persist();
+    temp_dir.save_on_panic();
 
-    log::info!("temporary directory: {}", dir.path().to_string_lossy());
-
-    Ok(dir)
+    Ok(temp_dir)
 }

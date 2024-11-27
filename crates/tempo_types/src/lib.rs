@@ -110,13 +110,13 @@ use tempo_id::{Ulid, Uuid};
 //     pub hash: String,
 // }
 
-// /// A request from the frontend to make a new note.
-// #[derive(Debug, serde::Serialize, serde::Deserialize)]
-// pub struct NewNote {
-//     pub body: String,
-//     pub parents: Vec<Ulid>,
-//     pub attachment: Option<NewAttachment>,
-// }
+/// A request from the frontend to make a new note.
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct NewNote {
+    pub body: String,
+    pub parents: Vec<Ulid>,
+    pub attachment: Option<NewAttachment>,
+}
 
 // #[derive(Debug, serde::Serialize, serde::Deserialize)]
 // pub enum NewAttachment {

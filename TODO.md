@@ -21,3 +21,4 @@ This is a partial rewrite of Tempo aimed at establishing long-term stability for
 - [ ] remove sql from shared data
 - [ ] rewrite frontend in svelte, focus on theming and actual good ui development from the start
   - this is going to take a long time, but is probably worth it
+- [ ] enforce single instance, probably just tauri plugin

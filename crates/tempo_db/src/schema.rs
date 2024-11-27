@@ -1,18 +1,44 @@
 use rusqlite::{Connection, OptionalExtension};
 
-pub fn load(conn: &mut Connection) -> anyhow::Result<()> {
-    //
+// pub const SQL_DB_NAME: &str = "tempo.sqlite";
+const SQL_SCHEMA: u32 = 0;
+
+/// Sets up Tempo's SQLite database, given a connection to the database.
+/// Performs initial setup/migrations if needed.
+pub fn setup_tempo_db(conn: &mut Connection) -> anyhow::Result<()> {
+    if let Some(schema) = get_schema(conn)? {
+        if schema != SQL_SCHEMA {
+            log::error!("SQL schema does not match! Expected {SQL_SCHEMA}, found {schema}");
+            // TODO migrations
+            panic!("SQL migrations unimplemented! Expected {SQL_SCHEMA}, found {schema}");
+        }
+    } else {
+        setup_schema_0(conn)?;
+    }
     Ok(())
 }
 
 pub fn get_schema(conn: &mut Connection) -> anyhow::Result<Option<u32>> {
-    Ok(conn
-        .query_row("SELECT schema FROM misc", [], |row| row.get(0))
-        .optional()?)
+    if conn
+        .query_row(
+            "SELECT name FROM sqlite_master WHERE name='misc'",
+            [],
+            |_| Ok(()),
+        )
+        .optional()?
+        .is_none()
+    {
+        Ok(None)
+    } else {
+        Ok(conn
+            .query_row("SELECT schema FROM misc", [], |row| row.get(0))
+            .optional()?)
+    }
 }
 
 pub fn setup_schema_0(conn: &mut Connection) -> anyhow::Result<()> {
-    conn.execute(r#"
+    conn.execute(
+        r#"
  
 CREATE TABLE IF NOT EXISTS misc (
     id INTEGER PRIMARY KEY CHECK (id = 0),
@@ -24,16 +50,17 @@ CREATE TABLE IF NOT EXISTS misc (
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
-    id INTEGER AUTOINCREMENT,
-    provider_id BLOB NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
 
     provider_ns TEXT NOT NULL,
+    provider_id BLOB NOT NULL,
+
     name TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS notes (
-    id INTEGER AUTOINCREMENT,
-    provider_id BLOB NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
     session_id INTEGER NOT NULL,
 
     -- unix time
@@ -46,7 +73,7 @@ CREATE TABLE IF NOT EXISTS notes (
     -- note id of channel note
     in_channel INTEGER,
 
-    channel BOOLEAN NOT NULL,
+    -- whether notification should be displayed for this note
     new BOOLEAN NOT NULL,
 
     FOREIGN KEY (session_id) REFERENCES sessions(id),
@@ -63,6 +90,17 @@ CREATE TABLE IF NOT EXISTS ancestry (
     UNIQUE (parent, child),
     CHECK (parent != child)
 );
+
+CREATE TRIGGER IF NOT EXISTS check_no_reverse_entries
+BEFORE INSERT ON ancestry
+FOR EACH ROW
+BEGIN
+    SELECT RAISE(ABORT, 'Reverse relationship exists')
+    WHERE EXISTS (
+        SELECT 1 FROM ancestry
+        WHERE parent = NEW.child AND child = NEW.parent
+    );
+END;
 
 CREATE TABLE IF NOT EXISTS plugin_ids (
     id INTEGER AUTOINCREMENT,
@@ -101,23 +139,35 @@ BEGIN
 END;
 */
 
-    "#, [])?;
+    "#,
+        [],
+    )?;
+
     let mut stmt = conn.prepare(
         r#"
-INSERT INTO misc (schema, uuid) VALUES (?1, ?2);
-    "#)?;
+INSERT INTO misc (id, schema, uuid) VALUES (0, ?1, ?2);
+    "#,
+    )?;
+
     stmt.execute(rusqlite::params![0, tempo_id::Uuid::new().to_string()])?;
+
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempo_test::get_temp_dir;
     use test_log::test;
 
     #[test]
-    pub fn create_db() {
-        let dir = get_temp_dir("create_db").unwrap();
+    pub fn create_and_load_db() {
+        let dir = tempo_test::get_temp_dir("create_and_load_db").unwrap();
+        let f = || {
+            let mut conn = rusqlite::Connection::open(dir.path().join("tempo.sqlite")).unwrap();
+
+            setup_tempo_db(&mut conn).unwrap();
+        };
+        f();
+        f();
     }
 }

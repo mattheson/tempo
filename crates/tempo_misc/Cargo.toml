@@ -7,6 +7,7 @@ edition = "2021"
 anyhow.workspace = true
 tauri.workspace = true
 sha2.workspace = true
+log.workspace = true
 
 native-dialog = "0.7"
 
