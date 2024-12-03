@@ -13,7 +13,6 @@ members = [
     "crates/tempo_db",
     "crates/tempo_id",
     "crates/tempo_misc",
-    "crates/tempo_provider",
     "crates/tempo_test",
     "crates/tempo_types",
 
@@ -27,7 +26,6 @@ tempo.path = "crates/tempo"
 tempo_db.path = "crates/tempo_db"
 tempo_id.path = "crates/tempo_id"
 tempo_misc.path = "crates/tempo_misc"
-tempo_provider.path = "crates/tempo_provider"
 tempo_test.path = "crates/tempo_test"
 tempo_types.path = "crates/tempo_types"
 

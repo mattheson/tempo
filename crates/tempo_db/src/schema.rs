@@ -53,19 +53,20 @@ CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
 
     provider_ns TEXT NOT NULL,
-    provider_id BLOB NOT NULL,
+    provider_id TEXT NOT NULL,
 
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+
+    UNIQUE (provider_ns, provider_id)
 );
 
-CREATE TABLE IF NOT EXISTS notes (
+CREATE TABLE IF NOT EXISTS objects (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
 
     session_id INTEGER NOT NULL,
 
-    -- unix time
-    time INTEGER NOT NULL,
-    creator_uuid BLOB NOT NULL,
+    unix_time INTEGER NOT NULL,
+    creator_uuid TEXT NOT NULL,
 
     -- note id of latest edit of this note
     latest INTEGER,
@@ -79,6 +80,35 @@ CREATE TABLE IF NOT EXISTS notes (
     FOREIGN KEY (session_id) REFERENCES sessions(id),
     FOREIGN KEY (latest) REFERENCES notes(id),
     FOREIGN KEY (in_channel) REFERENCES notes(id)
+);
+
+CREATE TABLE IF NOT EXISTS fs_sessions (
+    session_id INTEGER NOT NULL PRIMARY KEY,
+
+    last_scan INTEGER NOT NULL,
+    msg_num INTEGER NOT NULL,
+
+    FOREIGN KEY (session_id) REFERENCES sessions(id)
+);
+
+CREATE TABLE IF NOT EXISTS fs_users (
+    session_id INTEGER NOT NULL,
+    uuid TEXT NOT NULL,
+
+    missing JSON NOT NULL,
+    total_num INTEGER NOT NULL,
+    last_msg INTEGER NOT NULL,
+
+    UNIQUE (session_id, uuid)
+);
+
+CREATE TABLE IF NOT EXISTS fs_notes (
+    note_id INTEGER NOT NULL PRIMARY KEY,
+
+    msg_num INTEGER NOT NULL,
+    lamport_time INTEGER NOT NULL,
+
+    FOREIGN KEY (note_id) REFERENCES notes(id)
 );
 
 CREATE TABLE IF NOT EXISTS ancestry (

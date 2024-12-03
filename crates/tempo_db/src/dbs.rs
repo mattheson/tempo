@@ -5,6 +5,7 @@ pub struct Dbs {
     tempo_db_path: std::path::PathBuf,
     tempo_db: DbConnection,
 
+    // TODO drop connections when they're not being used
     other: dashmap::DashMap<std::path::PathBuf, DbConnection>,
 }
 

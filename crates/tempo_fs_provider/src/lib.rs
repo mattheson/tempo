@@ -1,3 +1,16 @@
+mod attachment;
+mod channel;
+mod comment;
+mod id;
+mod meta;
+mod note;
+mod session;
+
+mod message;
+
+pub const FS_SESSION_SCHEMA: u64 = 0;
+
+
 /// File system (or file sync) provider.
 /// Stores all Tempo data in a file sync-friendly folder hierarchy.
 pub struct FsProvider {

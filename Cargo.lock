@@ -485,6 +485,8 @@ version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd9de9f2205d5ef3fd67e685b0df337994ddd4495e2a28d185500d0e1edfea47"
 dependencies = [
+ "jobserver",
+ "libc",
  "shlex",
 ]
 
@@ -2336,6 +2338,15 @@ name = "jni-sys"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8eaf4bc02d17cbdd7ff4c7438cafcdf7fb9a4613313ad11b4f8fefe7d3fa0130"
+
+[[package]]
+name = "jobserver"
+version = "0.1.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "48d1dbcbbeb6a7fec7e059840aa538bd62aaccf972c7346c4d9d2059312853d0"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "js-sys"
@@ -4714,11 +4725,13 @@ name = "tempo_fs_provider"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "serde_json",
  "tauri",
  "tempo_db",
  "tempo_id",
  "tempo_types",
  "tokio",
+ "zstd",
 ]
 
 [[package]]
@@ -4746,18 +4759,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tempo_provider"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "tauri",
- "tempo_db",
- "tempo_id",
- "tempo_types",
- "tokio",
-]
-
-[[package]]
 name = "tempo_test"
 version = "0.1.0"
 dependencies = [
@@ -4770,8 +4771,12 @@ dependencies = [
 name = "tempo_types"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "serde",
+ "tauri",
+ "tempo_db",
  "tempo_id",
+ "tokio",
 ]
 
 [[package]]
@@ -6339,6 +6344,34 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.87",
+]
+
+[[package]]
+name = "zstd"
+version = "0.13.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fcf2b778a664581e31e389454a7072dab1647606d44f7feea22cd5abb9c9f3f9"
+dependencies = [
+ "zstd-safe",
+]
+
+[[package]]
+name = "zstd-safe"
+version = "7.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54a3ab4db68cea366acc5c897c7b4d4d1b8994a9cd6e6f841f8964566a419059"
+dependencies = [
+ "zstd-sys",
+]
+
+[[package]]
+name = "zstd-sys"
+version = "2.0.13+zstd.1.5.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38ff0f21cfee8f97d94cef41359e0c89aa6113028ab0291aa8ca0038995a95aa"
+dependencies = [
+ "cc",
+ "pkg-config",
 ]
 
 [[package]]

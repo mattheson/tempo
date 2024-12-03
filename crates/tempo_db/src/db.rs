@@ -47,4 +47,7 @@ mod tests {
         dbs.get().set_store("{ \"hi\": 2 }").await.unwrap();
         log::info!("got json: {}", dbs.get().get_store().await.unwrap());
     }
+
+    // #[test(tokio::test)]
+
 }

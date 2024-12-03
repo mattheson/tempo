@@ -4,11 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tempo_db.workspace = true
+zstd = "0.13"
 
+tempo_db.workspace = true
 tempo_types.workspace = true
 tempo_id.workspace = true
 
 anyhow.workspace = true
 tauri.workspace = true
 tokio.workspace = true
+serde_json.workspace = true

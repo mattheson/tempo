@@ -1,3 +1,4 @@
+
 /// Handles perisistance, synchronization and modification of session data.
 /// Acts as API for performing actions in Tempo sessions (besides reading data).
 pub trait TempoProvider: Sized {
@@ -13,6 +14,7 @@ pub trait TempoProvider: Sized {
         tokio_handle: tokio::runtime::Handle,
     ) -> anyhow::Result<Self>;
 
+    /// Retrieves an existing session.
     fn session(&self, id: &<Self::Session as TempoSession>::Id) -> anyhow::Result<Self::Session>;
 }
 
@@ -33,13 +35,14 @@ pub trait TempoChannel {
     type Note: TempoNote;
 
     fn set_name(self, name: &str) -> anyhow::Result<()>;
-    fn create_note(self, note: tempo_types::NewNote) -> anyhow::Result<Self::Note>;
+    fn create_note(self, note: crate::NewNote) -> anyhow::Result<Self::Note>;
 
     fn note(self, id: &<Self::Note as TempoNote>::Id) -> anyhow::Result<Self::Note>;
 }
 
 pub trait TempoNote {
     type Id;
+
     type Attachment: TempoAttachment;
     type Comment: TempoComment;
 

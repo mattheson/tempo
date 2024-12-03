@@ -1,3 +1,5 @@
+This document covers Tempo's design and internals.
+
 # Design
 
 ## Collaboration and Version Management
@@ -55,20 +57,10 @@ I'm going to look into implementing #2 in the future. For now, users can attach 
 ## Architecture
 Since this application uses Tauri, Tempo consists of a WebView frontend and a Rust backend.
 Generally the backend should do most data processing/data-intensive stuff. The frontend should just show stuff. Pretty standard.
-
-Tempo uses a Cargo workspace with business logic split into various crates for better incremental compliation. Right now it's not clear to me how granular each crate should be.
-
-## Data Model
-Data in folders is mostly stored in Automerge documents, except for user-specific metadata.
-
-All state is synchronized through third party sync services. Users will have to separately create folders and set up these sync services, then they add the shared folder to Tempo. Tempo needs to be designed to work well with these services. 
-Tempo could also work if two users were to save the shared folder on a flash drive and pass it between each other. Users could also work on their own copies of folders and merge them together with their file explorer's merge functionality. Lots of things might be possible.
+We use a Cargo workspace with business logic split into various crates for better incremental compliation.
 
 ## Data Directory
-Layout of the data directory:
-- `[data dir]`: name of data directory, could vary depending on OS
-  - `settings.json`: tauri kv store accessed only by frontend, stores frontend settings
-  - `tempo.sqlite`: Tempo's internal sqlite database
+Tempo's data directory only contains the `tempo.sqlite` database.
 
 ## State Management
 State management can be tricky with Tauri. You have to pass data between the frontend and backend using Tauri's command and event system.
@@ -86,3 +78,34 @@ The simplest solution I've found is to write **everything** into a SQLite databa
     - the header needs to be stripped
     - audio files can get very large and it's nice to not have to stream the whole file just to write it back to disk
     - might be tricks with sparse files or modern fs features to avoid streaming whole file?
+
+# Internals
+
+## Overview
+Tempo operates on directed acyclic graphs.
+
+These graphs are known as **sessions**.
+
+Nodes in these graphs are known as **notes**.
+
+Notes are small pieces of user-created data.
+
+Examples of notes:
+- an Ableton project note
+- a text note
+- a comment on a previously sent note
+
+**Every modification of a note results in the creation of a new note**. Since Tempo aims to faciliate version management, we preserve all changes within sessions.
+
+## Comparison to Git
+Tempo uses a content-addressable key-value store for storing files (files are stored named with their SHA256 hash).
+
+Tempo uses Git's concept of objects. Everything is an object in Tempo. Rather than using just tree/blob objects, Tempo uses lots of different specialized types of objects.
+
+## notes
+- tempo should move closer towards git
+  - deadly simple folder structure
+  - objects
+- rust is plumbing, frontend is porcelain
+- fs provider:
+  - refs + objects folder, that's it

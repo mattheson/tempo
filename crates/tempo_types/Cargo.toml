@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+tempo_db.workspace = true
 tempo_id.workspace = true
 
+anyhow.workspace = true
 serde.workspace = true
+tauri.workspace = true
+tokio.workspace = true
