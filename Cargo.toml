@@ -16,7 +16,7 @@ members = [
     "crates/tempo_test",
     "crates/tempo_types",
 
-    "crates/tempo_fs_provider",
+    "crates/tempo_fs_provider", "crates/tempo_session",
 ]
 
 [workspace.dependencies]
@@ -41,3 +41,4 @@ log = "0.4"
 sha2 = "0.10"
 test-log = "0.2"
 env_logger = "*"
+thiserror = "2"
