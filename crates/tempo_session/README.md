@@ -1,18 +1,13 @@
 # tempo sessions
 
+Definitions of Tempo's session/provider traits.
+
 Tempo sessions are basically the following:
 - object store/content-addressable store
   - objects are always identified with sha256 hashes
 - key-value store with following `Value` types:
-  - `Map`
-  - `ObjRef`: reference to an object in the object store
-  - `ValRef`: reference to another value in kv store
-    - TODO: is this really needed? just leaving this in because refs can point to refs in Git
+  - `Map`: nested map
   - `Data`: arbitrary bytes
-- references can be invalid/point to nothing
-- some restrictions on key contents (see `id.rs`)
-
-This crate provides a basic filesystem-based implementation of sessions. The `Session` trait can be used for creating other implementations.
 
 **This is basically the "plumbing" of Tempo.**
 

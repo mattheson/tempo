@@ -9,7 +9,7 @@ pub fn setup_tempo_db(conn: &mut Connection) -> anyhow::Result<()> {
     if let Some(schema) = get_schema(conn)? {
         if schema != SQL_SCHEMA {
             log::error!("SQL schema does not match! Expected {SQL_SCHEMA}, found {schema}");
-            // TODO migrations
+            // TODO migrations and better error to user here
             panic!("SQL migrations unimplemented! Expected {SQL_SCHEMA}, found {schema}");
         }
     } else {

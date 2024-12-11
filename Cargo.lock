@@ -4762,6 +4762,7 @@ dependencies = [
 name = "tempo_session"
 version = "0.1.0"
 dependencies = [
+ "tempo_db",
  "thiserror 2.0.3",
 ]
 

@@ -1,13 +1,14 @@
 use anyhow::Context;
 
-use super::DbConnection;
-
 /// Connection to Tempo's database.
-pub struct Db(pub(crate) DbConnection);
+pub struct Db {
+    pub(crate) conn: super::DbConnection,
+    pub(crate) notify: super::DbNotifier
+}
 
 impl Db {
     async fn lock(&self) -> tokio::sync::MutexGuard<'_, rusqlite::Connection> {
-        self.0.lock().await
+        self.conn.lock().await
     }
 
     pub async fn get_store(&self) -> anyhow::Result<String> {
@@ -21,7 +22,7 @@ impl Db {
         let _ = serde_json::from_str::<serde_json::Value>(json)
             .context("Invalid JSON provided to set_store()")?;
 
-        self.0.lock().await.execute(
+        self.conn.lock().await.execute(
             "UPDATE misc SET store = ?1 WHERE id = 0",
             rusqlite::params![json],
         )?;
@@ -49,5 +50,4 @@ mod tests {
     }
 
     // #[test(tokio::test)]
-
 }

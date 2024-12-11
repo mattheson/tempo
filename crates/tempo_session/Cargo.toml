@@ -8,4 +8,6 @@ repository.workspace = true
 authors.workspace = true
 
 [dependencies]
+tempo_db.workspace = true
+
 thiserror.workspace = true

@@ -70,7 +70,7 @@ impl Key {
     /// - can only be 255 characters at most
     pub fn new(key: &str) -> Result<Self, Error> {
         // TODO maybe too restricted? will change if needed
-        // restrictions should help with allowing for more implementations w/o having to worry about encoding
+        // restrictions should help with allowing for more implementations w/o having to worry about encodings
 
         if !key.is_ascii() {
             return Err(Error::Key("key contains non-ASCII characters".to_string()));
