@@ -1,3 +1,6 @@
+// stuff that maybe isn't needed
+
+
 // id types
 // we serialize to bytes with serde/autosurgeon
 // ids are saved as strings to sqlite
@@ -124,13 +127,4 @@ impl<'de> serde::Deserialize<'de> for Uuid {
     {
         deserializer.deserialize_byte_buf(UuidVisitor)
     }
-}
-
-pub struct FileRef {
-    sha256_bytes: Vec<u8>,
-    sha256_string: Option<String>,
-}
-
-impl FileRef {
-
 }

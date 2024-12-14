@@ -1,5 +1,5 @@
 [package]
-name = "tempo_session"
+name = "tempo_provider"
 version = "0.1.0"
 license.workspace = true
 edition.workspace = true
@@ -9,5 +9,9 @@ authors.workspace = true
 
 [dependencies]
 tempo_db.workspace = true
+tempo_misc.workspace = true
 
+anyhow.workspace = true
 thiserror.workspace = true
+tauri.workspace = true
+tokio.workspace = true

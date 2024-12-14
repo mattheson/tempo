@@ -1,12 +1,15 @@
 use anyhow::Context;
 
 /// Connection to Tempo's database.
-pub struct Db {
+pub struct Db<R>
+where
+    R: tauri::Runtime,
+{
     pub(crate) conn: super::DbConnection,
-    pub(crate) notify: super::DbNotifier
+    pub(crate) notify: super::DbNotifier<R>,
 }
 
-impl Db {
+impl<R: tauri::Runtime> Db<R> {
     async fn lock(&self) -> tokio::sync::MutexGuard<'_, rusqlite::Connection> {
         self.conn.lock().await
     }
@@ -20,7 +23,7 @@ impl Db {
 
     pub async fn set_store(&self, json: &str) -> anyhow::Result<()> {
         let _ = serde_json::from_str::<serde_json::Value>(json)
-            .context("Invalid JSON provided to set_store()")?;
+            .context("invalid JSON provided to set_store()")?;
 
         self.conn.lock().await.execute(
             "UPDATE misc SET store = ?1 WHERE id = 0",
@@ -35,18 +38,33 @@ mod tests {
     // use super::*;
     use test_log::test;
 
-    fn get_dbs(prefix: &str) -> (tempo_misc::TempDir, crate::Dbs) {
-        let dir = tempo_test::get_temp_dir(prefix).unwrap();
-        let dbs = crate::Dbs::new(dir.path()).unwrap();
-        (dir, dbs)
+    struct DbTest {
+        pub app: tauri::App<tauri::test::MockRuntime>,
+        pub handle: tauri::AppHandle<tauri::test::MockRuntime>,
+        pub dir: tempo_misc::TempDir,
+        pub dbs: crate::Dbs<tauri::test::MockRuntime>,
+    }
+
+    impl DbTest {
+        fn new(prefix: &str) -> DbTest {
+            let (app, handle) = tempo_misc::tauri_test();
+            let dir = tempo_test::get_temp_dir(prefix).unwrap();
+            let dbs = crate::Dbs::new(dir.path(), handle.clone()).unwrap();
+            Self {
+                app,
+                handle,
+                dir,
+                dbs,
+            }
+        }
     }
 
     #[test(tokio::test)]
     pub async fn test_store() {
-        let (_dir, dbs) = get_dbs("test_store");
+        let t = DbTest::new("test_store");
 
-        dbs.get().set_store("{ \"hi\": 2 }").await.unwrap();
-        log::info!("got json: {}", dbs.get().get_store().await.unwrap());
+        t.dbs.get().set_store("{ \"hi\": 2 }").await.unwrap();
+        log::info!("got json: {}", t.dbs.get().get_store().await.unwrap());
     }
 
     // #[test(tokio::test)]

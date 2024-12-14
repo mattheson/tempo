@@ -4,15 +4,17 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+native-dialog = "0.7"
+
 anyhow.workspace = true
 tauri.workspace = true
 sha2.workspace = true
 log.workspace = true
-
-native-dialog = "0.7"
+thiserror.workspace = true
+uuid.workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
-coreaudio-sys = "^0.2"
-core-foundation = "^0.10"
-cocoa = "^0.26"
-objc = "^0.2"
+coreaudio-sys = "0.2"
+core-foundation = "0.10"
+cocoa = "0.26"
+objc = "0.2"

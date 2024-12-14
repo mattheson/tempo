@@ -1599,10 +1599,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4567c8db10ae91089c99af84c68c38da3ec2f087c3f82960bcdbf3656b6f4d7"
 dependencies = [
  "cfg-if",
- "js-sys",
  "libc",
  "wasi 0.11.0+wasi-snapshot-preview1",
- "wasm-bindgen",
 ]
 
 [[package]]
@@ -4713,7 +4711,7 @@ dependencies = [
  "log",
  "rusqlite",
  "serde_json",
- "tempo_id",
+ "tauri",
  "tempo_misc",
  "tempo_test",
  "test-log",
@@ -4728,19 +4726,11 @@ dependencies = [
  "serde_json",
  "tauri",
  "tempo_db",
- "tempo_id",
- "tempo_types",
+ "tempo_misc",
+ "tempo_provider",
+ "thiserror 2.0.3",
  "tokio",
  "zstd",
-]
-
-[[package]]
-name = "tempo_id"
-version = "0.1.0"
-dependencies = [
- "serde",
- "ulid",
- "uuid",
 ]
 
 [[package]]
@@ -4756,14 +4746,20 @@ dependencies = [
  "objc",
  "sha2",
  "tauri",
+ "thiserror 2.0.3",
+ "uuid",
 ]
 
 [[package]]
-name = "tempo_session"
+name = "tempo_provider"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "tauri",
  "tempo_db",
+ "tempo_misc",
  "thiserror 2.0.3",
+ "tokio",
 ]
 
 [[package]]
@@ -4773,18 +4769,6 @@ dependencies = [
  "anyhow",
  "log",
  "tempo_misc",
-]
-
-[[package]]
-name = "tempo_types"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "serde",
- "tauri",
- "tempo_db",
- "tempo_id",
- "tokio",
 ]
 
 [[package]]
@@ -5273,18 +5257,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ulid"
-version = "1.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04f903f293d11f31c0c29e4148f6dc0d033a7f80cebc0282bea147611667d289"
-dependencies = [
- "getrandom 0.2.15",
- "rand 0.8.5",
- "serde",
- "web-time",
-]
-
-[[package]]
 name = "unic-char-property"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5625,16 +5597,6 @@ name = "web-sys"
 version = "0.3.72"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6488b90108c040df0fe62fa815cbdee25124641df01814dd7282749234c6112"
-dependencies = [
- "js-sys",
- "wasm-bindgen",
-]
-
-[[package]]
-name = "web-time"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a6580f308b1fad9207618087a65c04e7a10bc77e02c8e84e9b00dd4b12fa0bb"
 dependencies = [
  "js-sys",
  "wasm-bindgen",

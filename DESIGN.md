@@ -37,31 +37,42 @@ The simplest solution I've found is to write **everything** into a SQLite databa
 ## DAW Support
 Tempo only supports Ableton, but I'd like it to support other DAWs in the future.
 
-# Internals
+# Other notes
+## integration with medium
+Many collaborative/version management tools are deeply integrated with the medium they're managing.
+For example, with Git, there's an expectation that users are writing code, which allows Git to provide lots of text/code-specific features (e.g. merge conflict markers, generating patches)
 
-## Similarities With Git
-Tempo is very similar to Git. Tempo uses a content-addressable key-value store for storing files (files are stored named with their SHA256 hash).
+Unfortunately we don't have similar deep integration with project files from DAWs, since the format of these files is usually never publicly documented. This means Tempo can't provide complex features like Git (e.g. diffing project files), we have to treat project files as being mostly opaque. This will remain the case until tools exist for reliably parsing project file contents, or until DAWs start supporting something like DAWproject.
 
-Reused concepts from Git:
-- objects
-- refs
+There is one exception to this: Tempo does parse project files to read *file references and plugin references* since these references often break, and they're a very small subset of the contents of project files, which makes them much easier to parse/reverse engineer. However, Tempo doesn't handle reading/writing the actual composition (track/sample layout, MIDI, etc.) of project files.
 
-## Differences With Git
-There have been previous attempts at creating collaboration/version management tools for producers (namely Blend.io and Splice Studio, I'm sure there's others). I'd like Tempo to be local-first and not rely on me running a service, hence my focus on ensuring users can use sync services to share sessions between each other. As a result of this, Tempo will be CRDTy in some parts of its design. Tempo used Automerge in its initial alpha design. Tempo should not be local-first-only, there should be some sort of Tempo-specific service users can run or use to share work with each other.
+## version management expectations
+Version management systems are usually focused on managing divergent versions of a medium combined with an expectation that users will converge divergent versions (merging).
 
-As a whole, it's best to reference Pijul or other distributed version management systems for design inspiration.
+Tempo has a different approach compared to systems like Git. Tempo is much more focused on just the **organization** aspect of different versions, primarily because it's difficult to integrate deeply with project files (previous section).
 
-Tempo uses lots of specialized types of objects rather than a small set of objects.
+We focus more on allowing users to build trees of project versions
 
-Git is primarily focused on managing source code. Tempo is focused on managing audio files and project files. The workflow of music producers differs significantly from that of programmers. I have no concrete ideas for how
+## crdts
+Tempo previously used Automerge as its primary storage mechanism for application data.
 
-Considering this, I've tried to make Tempo's internals as simplistic as possible to allow for lots of extensibility in the future.
+Automerge was useful for two things:
+- merging together concurrent insertions into a key-value map together
+  - e.g. user A adds kv pair I1 to map M, user B adds kv pair I2 to M, M = { I1, I2 }
+- deterministic tie breaking of values concurrently written to
 
+I think both benefits were a very minimal part of what Automerge offered, and can be implemented internally in Tempo.
+I'd also like Tempo to have a notification system, and it's been tricky to figure out how I could implement this with Automerge.
+Essentially the issue seems to be taking diffed changes and converting them into notifications. For example with Automerge i'd have to do:
 
-## notes
-- tempo should move closer towards git
-  - deadly simple folder structure
-  - objects
-- rust is plumbing, frontend is porcelain
-- fs provider:
-  - refs + objects folder, that's it
+`PatchLog` (set of diffs from prev state) -> categorization system for individual changes (what changed?) -> notification system
+
+In Automerge, If I modelled comments as being a map inside of some kind of `Note` object, I would need to recognize that an insertion in this map is a creation of a comment. This feels like one too many moving parts.
+
+I hope to make this simpler in Tempo and have something like:
+
+set of newly added Tempo session objects -> notification system
+
+Overall, I don't think Automerge is a good fit for Tempo, but it should be strongly considered if Tempo needs to store realtime editable text or if Tempo itself were to become a DAW :).
+
+Tempo is shifting towards being a Git-like simplistic CRDT.

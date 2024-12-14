@@ -1,14 +1,9 @@
-use std::{
-    fs,
-    io::Read,
-    path::{Path, PathBuf},
-};
+pub mod types;
+pub use crate::types::*;
 
-use anyhow::{anyhow, Context, Result};
-use sha2::{Digest, Sha256};
-use tauri::{AppHandle, Manager};
-
-pub const FOLDER_SCHEMA: usize = 0;
+use sha2::Digest;
+use std::io::Read;
+use tauri::Manager;
 
 /// Opens blocking error dialog and closes afterwards.
 pub fn fatal_error(msg: &str) -> ! {
@@ -21,7 +16,7 @@ pub fn fatal_error(msg: &str) -> ! {
     std::process::exit(1)
 }
 
-pub fn fatal_error_close_windows(handle: &AppHandle, msg: &str) -> ! {
+pub fn fatal_error_close_windows(handle: &tauri::AppHandle, msg: &str) -> ! {
     for (_, window) in handle.webview_windows() {
         let _ = window.close();
     }
@@ -50,16 +45,16 @@ pub fn open_full_disk() {
 
 /// Returns true if we have full disk access
 #[cfg(target_os = "macos")]
-pub fn check_full_disk(home_dir: &Path) -> bool {
+pub fn check_full_disk(home_dir: &std::path::Path) -> bool {
     // macOS has no api for telling whether we have full disk access directly
     // there are some directories we can try reading to tell whether we have access or not
     // based off of https://github.com/MacPaw/PermissionsKit/blob/master/PermissionsKit/Private/FullDiskAccess/MPFullDiskAccessAuthorizer.m
 
-    let test_paths: [PathBuf; 4] = [
+    let test_paths: [std::path::PathBuf; 4] = [
         home_dir.join("Library/Safari/CloudTabs.db"),
         home_dir.join("Library/Safari/Bookmarks.plist"),
         home_dir.join("Library/Application Support/com.apple.TCC/TCC.db"),
-        PathBuf::from("/Library/Preferences/com.apple.TimeMachine.plist"),
+        std::path::PathBuf::from("/Library/Preferences/com.apple.TimeMachine.plist"),
     ];
 
     for p in test_paths {
@@ -94,14 +89,10 @@ pub fn extract_file_extension(filename: &str) -> (String, Option<String>) {
     }
 }
 
-pub fn hash_file(file: &Path) -> Result<String> {
-    let mut file = std::fs::File::open(file).map_err(|e| {
-        anyhow!(
-            "Failed to open file {} to calculate hash, error: {e}",
-            path_to_str(file)
-        )
-    })?;
-    let mut hasher = Sha256::new();
+pub fn hash_file(file: &std::path::Path) -> std::io::Result<Sha256Hash> {
+    let mut file = std::fs::File::open(file)?;
+
+    let mut hasher = sha2::Sha256::new();
     let mut buffer = [0; 1024];
 
     loop {
@@ -112,202 +103,31 @@ pub fn hash_file(file: &Path) -> Result<String> {
         hasher.update(&buffer[..count]);
     }
 
-    Ok(format!("{:x}", hasher.finalize()))
+    Ok(Sha256Hash(format!("{:x}", hasher.finalize())))
 }
 
-/// Gets a filename from a path which is expected to be a file.
-pub fn get_filename(path: &Path) -> Result<String> {
-    Ok(path
-        .file_name()
-        .ok_or(anyhow!(
-            "File {} does not have a filename",
-            path.to_string_lossy()
-        ))?
-        .to_string_lossy()
-        .to_string())
+/// Gets a filename from a path. Does not check whether the path is a directory or a file.
+pub fn get_filename(path: &std::path::Path) -> Option<String> {
+    Some(path.file_name()?.to_string_lossy().to_string())
 }
 
-// i know windows paths are funky which is why i have this
-pub fn path_to_str(path: &Path) -> String {
+// i know windows paths are funky which is why i have this, probably will be unused though
+pub fn path_to_str(path: &std::path::Path) -> String {
     path.to_string_lossy().to_string()
 }
 
-pub fn get_unix_timestamp() -> Result<u64> {
+pub fn get_unix_timestamp() -> Result<u64, std::time::SystemTimeError> {
     Ok(std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_millis())? as u64)
 }
 
-// pub fn is_valid_ulid(s: &str) -> bool {
-//     s.len() == 26 && s.chars().all(|c| c.is_ascii_alphanumeric())
-// }
 
-pub fn is_sha256(s: &str) -> bool {
-    s.len() == 64 && s.chars().all(|c| c.is_ascii_hexdigit())
-}
-
-/// Extracts the first two characters from a ulid's hash part
-pub fn get_ulid_chars(ulid: &str) -> String {
-    ulid[10..=11].into()
-}
-
-/// A unique directory within a directory.
-pub struct UniqueDir {
-    pub name: String,
-    pub path: PathBuf,
-}
-
-impl UniqueDir {
-    pub fn new<P>(dir: P, name: &str) -> anyhow::Result<Self>
-    where
-        P: AsRef<Path>,
-    {
-        fs::create_dir_all(dir.as_ref())
-            .context("Failed to create missing parent directory for UniqueDir")?;
-
-        let create = |p: &Path| match fs::create_dir(p) {
-            Ok(()) => Ok(true),
-            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => Ok(false),
-            Err(e) => Err(e),
-        };
-
-        let mut path = dir.as_ref().join(name);
-
-        if create(&path)? {
-            Ok(Self {
-                name: name.to_string(),
-                path,
-            })
-        } else {
-            let mut count = 1usize;
-            loop {
-                let curr_name = format!("{name}-{count}");
-                path = dir.as_ref().join(&curr_name);
-
-                if create(&path)? {
-                    break Ok(Self {
-                        name: curr_name,
-                        path,
-                    });
-                }
-
-                count += 1;
-            }
-        }
-    }
-}
-
-/// A unique file within a directory.
-pub struct UniqueFile {
-    pub filename: String,
-    pub path: PathBuf,
-    pub file: fs::File,
-}
-
-impl UniqueFile {
-    pub fn new<P>(dir: P, filename: &str) -> anyhow::Result<Self>
-    where
-        P: AsRef<Path>,
-    {
-        let mut path = dir.as_ref().join(filename);
-
-        if !fs::exists(&path)? {
-            Ok(Self {
-                filename: filename.to_string(),
-                file: fs::File::create_new(&path)?,
-                path,
-            })
-        } else {
-            let (base, ext) = extract_file_extension(filename);
-
-            let mut count = 1usize;
-            loop {
-                let curr_filename = format!("{base}-{count}{}", ext.as_deref().unwrap_or(""));
-                path = dir.as_ref().join(&curr_filename);
-
-                if !path.exists() {
-                    break Ok(Self {
-                        filename: curr_filename,
-                        file: fs::File::create_new(&path)?,
-                        path,
-                    });
-                }
-
-                count += 1;
-            }
-        }
-    }
-
-    pub fn path(&self) -> &Path {
-        &self.path
-    }
-
-    pub fn filename(&self) -> &str {
-        &self.filename
-    }
-
-    pub fn file(&mut self) -> &mut fs::File {
-        &mut self.file
-    }
-}
-
-pub struct TempDir {
-    path: std::path::PathBuf,
-    persist: bool,
-    save_on_panic: bool,
-    panic_if_err: bool,
-}
-
-impl TempDir {
-    /// Gets a new temporary directory.
-    pub fn new<P>(parent_dir: P, prefix: &str) -> anyhow::Result<Self>
-    where
-        P: AsRef<std::path::Path>,
-    {
-        let UniqueDir { name: _, path } = UniqueDir::new(parent_dir, prefix)?;
-
-        log::info!("Created a temporary directory: {}", path_to_str(&path));
-
-        Ok(Self {
-            path,
-            persist: false,
-            save_on_panic: false,
-            panic_if_err: true,
-        })
-    }
-
-    pub fn persist(&mut self) {
-        self.persist = true
-    }
-
-    /// Does not delete this temporary directory when a panic occurs.
-    pub fn save_on_panic(&mut self) {
-        self.save_on_panic = true
-    }
-
-    /// Panics if an error is encountered when deleting this temporary directory when `Drop`ping.
-    pub fn panic_if_err(&mut self) {
-        self.panic_if_err = true
-    }
-
-    pub fn path(&self) -> &Path {
-        &self.path
-    }
-}
-
-impl Drop for TempDir {
-    fn drop(&mut self) {
-        if !((std::thread::panicking() && self.save_on_panic) || self.persist) {
-            match std::fs::remove_dir_all(&self.path) {
-                Ok(()) => log::info!("Removed temporary directory at {}", path_to_str(&self.path)),
-                Err(e) => {
-                    if self.panic_if_err {
-                        panic!("Error while deleting temporary directory: {}", e)
-                    } else {
-                        log::error!("Error while deleting temporary directory: {}", e)
-                    }
-                }
-            }
-        }
-    }
+pub fn tauri_test() -> (
+    tauri::App<tauri::test::MockRuntime>,
+    tauri::AppHandle<tauri::test::MockRuntime>,
+) {
+    let app = tauri::test::mock_app();
+    let handle = app.handle().clone();
+    (app, handle)
 }

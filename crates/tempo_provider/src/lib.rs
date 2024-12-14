@@ -1,28 +1,40 @@
-use crate::{Key, Sha256Hash};
+mod error;
+pub use error::*;
+
+use tempo_misc::{Key, Sha256Hash};
+
+/// Providers provide write access to Tempo sessions.
+/// Providers are expected to handle asynchronously updating Tempo's SQLite database (see the `tempo_db` crate).
+pub trait Provider<R: tauri::Runtime>: Sized {
+    /// Internal identifier for data specific to this provider impl.
+    const NAMESPACE: &str;
+
+    type Err: std::error::Error;
+    type Session: Session;
+
+    /// Initializes this provider.
+    fn new(db: tempo_db::Db<R>, tokio_handle: tokio::runtime::Handle) -> Result<Self, Self::Err>;
+
+    /// Retrieves an existing session.
+    fn session(&self, id: &<Self::Session as Session>::Id) -> Result<Self::Session, Self::Err>;
+
+    /// Creates a new session.
+    fn new_session(&self, name: &str) -> Result<Self::Session, Self::Err>;
+}
 
 /// A Tempo session.
 /// Sessions, at their core, consist of an object store along with a key-value store.
-/// This interface is very minimal and provides no specific types of objects/values, all data is stored as byte arrays.
+/// This interface is very minimal and provides no specific types for objects/values, all data is stored as byte arrays.
 pub trait Session: Sized + Send + Sync + ObjectStore + Map {
-    type Err: std::error::Error;
-
     /// Impl-specific identifier for a session.
     type Id;
-    type Info: Info;
 
-    /// Gets info about this session.
-    fn info(&self) -> Result<Self::Info, <Self as Session>::Err>;
-}
-
-pub trait Info: Sized + Send + Sync {
     type Err: std::error::Error;
-
-    fn get_name(&self) -> String;
 }
 
+/// Object store/content-addressable store.
 pub trait ObjectStore: Sized + Send + Sync {
     type Err: std::error::Error;
-
     type Object: Object;
 
     /// Returns whether the given object exists.
@@ -32,14 +44,13 @@ pub trait ObjectStore: Sized + Send + Sync {
     fn get_obj(&self, hash: &Sha256Hash) -> Result<Option<Self::Object>, Self::Err>;
 
     /// Creates an object.
-    fn create_object<R: std::io::Read>(&self, data: R) -> Result<Self::Object, Self::Err>;
+    fn create_object(&self, data: impl std::io::Read) -> Result<Self::Object, Self::Err>;
 }
 
 /// Map/key-value store.
 pub trait Map: Sized + Send + Sync {
-    type Err: std::error::Error;
-
     type Data: Data;
+    type Err: std::error::Error;
 
     /// Number of key-value entries in this map.
     fn size(&self) -> u64;
@@ -51,22 +62,23 @@ pub trait Map: Sized + Send + Sync {
 
     fn set_map(&self, key: &Key) -> Result<Self, Self::Err>;
 
-    fn set_data<R: std::io::Read>(&self, key: &Key, data: R) -> Result<(), Self::Err>;
+    fn set_data(&self, key: &Key, data: impl std::io::Read) -> Result<(), Self::Err>;
 }
 
 /// Arbitrary bytes stored in key-value store.
 pub trait Data: Sized + Send + Sync {
     type Err: std::error::Error;
 
-    fn new<R: std::io::Read>(data: R) -> Result<Self, Self::Err>;
-    fn read<R: std::io::Read>(&self) -> Result<R, Self::Err>;
+    fn new(data: impl std::io::Read) -> Result<Self, Self::Err>;
+    fn read(&self) -> Result<impl std::io::Read, Self::Err>;
 }
 
 /// Object in object store.
 pub trait Object: Sized + Send + Sync {
     type Err: std::error::Error;
 
-    fn read<R: std::io::Read>(&self) -> Result<R, Self::Err>;
+    fn hash(&self) -> Result<Sha256Hash, Self::Err>;
+    fn read(&self) -> Result<impl std::io::Read, Self::Err>;
 }
 
 /// A value stored in a `Session`'s key-value map.

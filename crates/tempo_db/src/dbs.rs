@@ -1,16 +1,16 @@
-use super::DbConnection;
-
 /// Holds all of Tempo's open SQLite connections.
-pub struct Dbs {
+pub struct Dbs<R: tauri::Runtime> {
     tempo_db_path: std::path::PathBuf,
-    tempo_db: DbConnection,
+    tempo_db: super::DbConnection,
+
+    notifier: super::DbNotifier<R>,
 
     // TODO drop connections when they're not being used
-    other: dashmap::DashMap<std::path::PathBuf, DbConnection>,
+    other: dashmap::DashMap<std::path::PathBuf, super::DbConnection>,
 }
 
-impl Dbs {
-    pub fn new<P>(data_dir: P) -> anyhow::Result<Self>
+impl<R: tauri::Runtime> Dbs<R> {
+    pub fn new<P>(data_dir: P, handle: tauri::AppHandle<R>) -> anyhow::Result<Self>
     where
         P: AsRef<std::path::Path>,
     {
@@ -24,15 +24,19 @@ impl Dbs {
         Ok(Self {
             tempo_db_path,
             tempo_db,
+            notifier: super::DbNotifier::new(handle),
             other: dashmap::DashMap::new(),
         })
     }
 
-    pub fn get(&self) -> crate::Db {
-        crate::Db(self.tempo_db.clone())
+    pub fn get(&self) -> crate::Db<R> {
+        crate::Db {
+            conn: self.tempo_db.clone(),
+            notify: self.notifier.clone()
+        }
     }
 
-    pub fn get_other<P>(&self, path: P) -> anyhow::Result<DbConnection>
+    pub fn get_other<P>(&self, path: P) -> anyhow::Result<super::DbConnection>
     where
         P: AsRef<std::path::Path>,
     {
@@ -55,9 +59,10 @@ mod tests {
 
     #[test]
     pub fn create_and_load_db() {
+        let (_app, handle) = tempo_misc::tauri_test();
         let dir = tempo_test::get_temp_dir("create_and_load_db").unwrap();
         let f = || {
-            let _dbs = Dbs::new(dir.path()).unwrap();
+            let _dbs = Dbs::new(dir.path(), handle.clone()).unwrap();
         };
         f();
         f();

@@ -179,7 +179,7 @@ INSERT INTO misc (id, schema, uuid) VALUES (0, ?1, ?2);
     "#,
     )?;
 
-    stmt.execute(rusqlite::params![0, tempo_id::Uuid::new().to_string()])?;
+    // stmt.execute(rusqlite::params![0, tempo_id::Uuid::new().to_string()])?;
 
     Ok(())
 }
