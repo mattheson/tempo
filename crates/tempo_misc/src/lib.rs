@@ -93,7 +93,7 @@ pub fn hash_file(file: &std::path::Path) -> std::io::Result<Sha256Hash> {
     let mut file = std::fs::File::open(file)?;
 
     let mut hasher = sha2::Sha256::new();
-    let mut buffer = [0; 1024];
+    let mut buffer = [0; 4096];
 
     loop {
         let count = file.read(&mut buffer)?;
@@ -101,6 +101,26 @@ pub fn hash_file(file: &std::path::Path) -> std::io::Result<Sha256Hash> {
             break;
         }
         hasher.update(&buffer[..count]);
+    }
+
+    Ok(Sha256Hash(format!("{:x}", hasher.finalize())))
+}
+
+/// Reads data and copies it back, computes SHA256.
+pub fn hash_and_copy(
+    mut input: impl std::io::Read,
+    mut output: impl std::io::Write,
+) -> std::io::Result<Sha256Hash> {
+    let mut hasher = sha2::Sha256::new();
+    let mut buffer = [0; 4096];
+
+    loop {
+        let count = input.read(&mut buffer)?;
+        if count == 0 {
+            break;
+        }
+        hasher.update(&buffer[..count]);
+        output.write_all(&buffer)?;
     }
 
     Ok(Sha256Hash(format!("{:x}", hasher.finalize())))
@@ -121,7 +141,6 @@ pub fn get_unix_timestamp() -> Result<u64, std::time::SystemTimeError> {
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_millis())? as u64)
 }
-
 
 pub fn tauri_test() -> (
     tauri::App<tauri::test::MockRuntime>,

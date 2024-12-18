@@ -113,19 +113,19 @@ impl TempDir {
         })
     }
 
-    pub fn persist(&mut self) -> &mut Self {
+    pub fn persist(mut self) -> Self {
         self.persist = true;
         self
     }
 
     /// Does not delete this temporary directory when a panic occurs.
-    pub fn save_on_panic(&mut self) -> &mut Self {
+    pub fn save_on_panic(mut self) -> Self {
         self.save_on_panic = true;
         self
     }
 
     /// Panics if an error is encountered when deleting this temporary directory when `Drop`ping.
-    pub fn panic_if_err(&mut self) -> &mut Self {
+    pub fn panic_if_err(mut self) -> Self {
         self.panic_if_err = true;
         self
     }
@@ -179,7 +179,7 @@ impl TempFile {
         Ok(Self {
             file,
             path,
-            persist: true,
+            persist: false,
             save_on_panic: false,
             panic_if_err: false,
         })
@@ -189,19 +189,19 @@ impl TempFile {
         &self.path
     }
 
-    pub fn persist(&mut self) -> &mut Self {
+    pub fn persist(mut self) -> Self {
         self.persist = true;
         self
     }
 
     /// Does not delete this temporary file when a panic occurs.
-    pub fn save_on_panic(&mut self) -> &mut Self {
+    pub fn save_on_panic(mut self) -> Self {
         self.save_on_panic = true;
         self
     }
 
     /// Panics if an error is encountered when deleting this temporary file when `Drop`ping.
-    pub fn panic_if_err(&mut self) -> &mut Self {
+    pub fn panic_if_err(mut self) -> Self {
         self.panic_if_err = true;
         self
     }

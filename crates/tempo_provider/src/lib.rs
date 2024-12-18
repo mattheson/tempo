@@ -16,7 +16,11 @@ pub trait Provider<R: tauri::Runtime>: Sized {
     fn new(db: tempo_db::Db<R>, tokio_handle: tokio::runtime::Handle) -> Result<Self, Self::Err>;
 
     /// Retrieves an existing session.
-    fn session(&self, id: &<Self::Session as Session>::Id) -> Result<Self::Session, Self::Err>;
+    /// `None` if the session is unknown.
+    fn session(
+        &self,
+        id: impl AsRef<<Self::Session as Session>::Id>,
+    ) -> Result<Option<Self::Session>, Self::Err>;
 
     /// Creates a new session.
     fn new_session(&self, name: &str) -> Result<Self::Session, Self::Err>;
@@ -27,7 +31,7 @@ pub trait Provider<R: tauri::Runtime>: Sized {
 /// This interface is very minimal and provides no specific types for objects/values, all data is stored as byte arrays.
 pub trait Session: Sized + Send + Sync + ObjectStore + Map {
     /// Impl-specific identifier for a session.
-    type Id;
+    type Id: ?Sized;
 
     type Err: std::error::Error;
 }
@@ -38,13 +42,17 @@ pub trait ObjectStore: Sized + Send + Sync {
     type Object: Object;
 
     /// Returns whether the given object exists.
-    fn obj_exists(&self, hash: &Sha256Hash) -> Result<bool, Self::Err>;
+    fn object_exists(&self, hash: &Sha256Hash) -> Result<bool, Self::Err>;
 
     /// Gets an object given its hash. `None` if the object doesn't exist.
-    fn get_obj(&self, hash: &Sha256Hash) -> Result<Option<Self::Object>, Self::Err>;
+    fn get_object(&self, hash: &Sha256Hash) -> Result<Option<Self::Object>, Self::Err>;
 
     /// Creates an object.
     fn create_object(&self, data: impl std::io::Read) -> Result<Self::Object, Self::Err>;
+
+    /// Removes an object.
+    /// TODO: make sure that using this doesn't break Tempo.
+    fn remove_object(&self, hash: &Sha256Hash) -> Result<(), Self::Err>;
 }
 
 /// Map/key-value store.
@@ -54,26 +62,34 @@ pub trait Map: Sized + Send + Sync {
 
     /// Number of key-value entries in this map.
     fn size(&self) -> u64;
-    fn iter(&self) -> Result<impl Iterator<Item = (Key, Value<Self, Self::Data>)>, Self::Err>;
 
-    fn exists(&self, key: &Key) -> Result<bool, Self::Err>;
+    /// Iterates over all key-value pairs in this map.
+    fn iter(&self) -> Result<impl Iterator<Item = (Key, Value<impl Map, Self::Data>)>, Self::Err>;
 
-    fn get(&self, key: &Key) -> Result<Option<Value<Self, Self::Data>>, Self::Err>;
+    /// Returns whether the given key is present in this map.
+    fn exists(&self, path: &[Key]) -> Result<bool, Self::Err>;
 
-    fn set_map(&self, key: &Key) -> Result<Self, Self::Err>;
+    /// Gets a value. `None` if value not found.
+    fn get(&self, path: &[Key]) -> Result<Option<Value<Self, Self::Data>>, Self::Err>;
 
-    fn set_data(&self, key: &Key, data: impl std::io::Read) -> Result<(), Self::Err>;
+    /// Sets a key to some `Data`.
+    /// This will automatically create nested maps as needed.
+    /// Fails if `path` points to an existing key-map pair.
+    fn set(&self, path: &[Key], data: impl std::io::Read) -> Result<(), Self::Err>;
+
+    /// Clears a key-value entry.
+    /// TODO: make sure that using this doesn't break Tempo.
+    fn clear(&self, path: &[Key]) -> Result<(), Self::Err>;
 }
 
 /// Arbitrary bytes stored in key-value store.
 pub trait Data: Sized + Send + Sync {
     type Err: std::error::Error;
 
-    fn new(data: impl std::io::Read) -> Result<Self, Self::Err>;
     fn read(&self) -> Result<impl std::io::Read, Self::Err>;
 }
 
-/// Object in object store.
+/// Object stored in object store.
 pub trait Object: Sized + Send + Sync {
     type Err: std::error::Error;
 

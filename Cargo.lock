@@ -4723,6 +4723,7 @@ name = "tempo_fs_provider"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "log",
  "serde_json",
  "tauri",
  "tempo_db",
