@@ -1,4 +1,6 @@
-Definitions of Tempo's session/provider traits.
+Definitions of Tempo's `Provider` trait.
+
+Providers provide write access to sessions and handle updating Tempo's SQLite database.
 
 Sessions are basically the following:
 - object store/content-addressable store

@@ -128,3 +128,93 @@ impl<'de> serde::Deserialize<'de> for Uuid {
         deserializer.deserialize_byte_buf(UuidVisitor)
     }
 }
+
+/// String used as a valid key in a `Session`'s key-value store.
+pub struct Key(String);
+
+impl Key {
+    /// Creates a new `Key`.
+    ///
+    /// # Restrictions on key contents
+    /// - can't be empty
+    /// - ASCII only
+    /// - can only contain a-z A-Z 0-9 _ -
+    /// - can only be 255 characters at most
+    pub fn new(key: &str) -> Result<Self, String> {
+        // TODO maybe too restricted? will change if needed
+        // restrictions should help with allowing for more implementations w/o having to worry about encodings
+
+        if key.is_empty() {
+            return Err("key cannot be empty".to_string());
+        }
+
+        if !key.is_ascii() {
+            return Err("key contains non-ASCII characters".to_string());
+        }
+
+        if !key
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '_' || c == '-')
+        {
+            return Err("key contains disallowed characters".to_string());
+        }
+
+        if key.len() > 255 {
+            return Err("key exceeds 255 characters".to_string());
+        }
+
+        Ok(Self(key.to_string()))
+    }
+}
+
+impl std::str::FromStr for Key {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::new(s)
+    }
+}
+
+impl std::fmt::Display for Key {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl AsRef<str> for Key {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl AsRef<std::path::Path> for Key {
+    fn as_ref(&self) -> &std::path::Path {
+        self.0.as_ref()
+    }
+}
+
+impl std::ops::Deref for Key {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl TryFrom<std::ffi::OsString> for Key {
+    type Error = String;
+
+    fn try_from(value: std::ffi::OsString) -> Result<Self, Self::Error> {
+        if let Some(value) = value.to_str() {
+            Key::new(value)
+        } else {
+            Err("OsString appears to be invalid Unicode".to_string())
+        }
+    }
+}
+
+impl Key {
+    pub fn into_inner(self) -> String {
+        self.0
+    }
+}

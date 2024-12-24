@@ -94,11 +94,11 @@ pub struct FsObject {
     pub(crate) hash: Sha256Hash,
 }
 
-impl tempo_provider::Object for FsObject {
+impl tempo_provider::Object<'_> for FsObject {
     type Err = Error;
 
-    fn hash(&self) -> Result<Sha256Hash> {
-        Ok(self.hash.clone())
+    fn hash(&self) -> &Sha256Hash {
+        &self.hash
     }
 
     fn read(&self) -> Result<impl std::io::Read> {

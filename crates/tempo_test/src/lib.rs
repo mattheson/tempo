@@ -5,9 +5,7 @@ pub fn get_temp_dir(prefix: &str) -> anyhow::Result<tempo_misc::TempDir> {
         std::fs::create_dir_all(&tests_dir)?;
     }
 
-    let mut temp_dir = tempo_misc::TempDir::new(&tests_dir, prefix)?;
-    temp_dir.persist();
-    temp_dir.save_on_panic();
+    let temp_dir = tempo_misc::TempDir::new(&tests_dir, prefix)?.persist().save_on_panic();
 
     Ok(temp_dir)
 }

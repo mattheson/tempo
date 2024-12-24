@@ -1,7 +1,6 @@
 pub mod types;
 pub use crate::types::*;
 
-use sha2::Digest;
 use std::io::Read;
 use tauri::Manager;
 
@@ -89,42 +88,42 @@ pub fn extract_file_extension(filename: &str) -> (String, Option<String>) {
     }
 }
 
-pub fn hash_file(file: &std::path::Path) -> std::io::Result<Sha256Hash> {
-    let mut file = std::fs::File::open(file)?;
+// pub fn hash_file(file: &std::path::Path) -> std::io::Result<Blake3> {
+//     let mut file = std::fs::File::open(file)?;
 
-    let mut hasher = sha2::Sha256::new();
-    let mut buffer = [0; 4096];
+//     let mut hasher = sha2::Sha256::new();
+//     let mut buffer = [0; 4096];
 
-    loop {
-        let count = file.read(&mut buffer)?;
-        if count == 0 {
-            break;
-        }
-        hasher.update(&buffer[..count]);
-    }
+//     loop {
+//         let count = file.read(&mut buffer)?;
+//         if count == 0 {
+//             break;
+//         }
+//         hasher.update(&buffer[..count]);
+//     }
 
-    Ok(Sha256Hash(format!("{:x}", hasher.finalize())))
-}
+//     Ok(Blake3(format!("{:x}", hasher.finalize())))
+// }
 
-/// Reads data and copies it back, computes SHA256.
-pub fn hash_and_copy(
-    mut input: impl std::io::Read,
-    mut output: impl std::io::Write,
-) -> std::io::Result<Sha256Hash> {
-    let mut hasher = sha2::Sha256::new();
-    let mut buffer = [0; 4096];
+// /// Reads data and copies it back, computes SHA256.
+// pub fn hash_and_copy(
+//     mut input: impl std::io::Read,
+//     mut output: impl std::io::Write,
+// ) -> std::io::Result<Blake3> {
+//     let mut hasher = sha2::Sha256::new();
+//     let mut buffer = [0; 4096];
 
-    loop {
-        let count = input.read(&mut buffer)?;
-        if count == 0 {
-            break;
-        }
-        hasher.update(&buffer[..count]);
-        output.write_all(&buffer)?;
-    }
+//     loop {
+//         let count = input.read(&mut buffer)?;
+//         if count == 0 {
+//             break;
+//         }
+//         hasher.update(&buffer[..count]);
+//         output.write_all(&buffer)?;
+//     }
 
-    Ok(Sha256Hash(format!("{:x}", hasher.finalize())))
-}
+//     Ok(Blake3(format!("{:x}", hasher.finalize())))
+// }
 
 /// Gets a filename from a path. Does not check whether the path is a directory or a file.
 pub fn get_filename(path: &std::path::Path) -> Option<String> {

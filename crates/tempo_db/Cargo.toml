@@ -9,15 +9,15 @@ authors.workspace = true
 
 [dependencies]
 tempo_misc.workspace = true
-
 anyhow.workspace = true
 log.workspace = true
 rusqlite.workspace = true
 tokio.workspace = true
 tauri.workspace = true
 serde_json.workspace = true
-
-dashmap = "6"
+crossbeam.workspace = true
+uuid.workspace = true
+thiserror.workspace = true
 
 [dev-dependencies]
 env_logger.workspace = true

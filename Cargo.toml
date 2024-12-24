@@ -13,9 +13,7 @@ members = [
     "crates/tempo_db",
     "crates/tempo_misc",
     "crates/tempo_test",
-
-    "crates/tempo_provider",
-    "crates/tempo_fs_provider",
+    "crates/tempo_filesync",
 ]
 
 [workspace.dependencies]
@@ -25,19 +23,17 @@ tempo.path = "crates/tempo"
 tempo_db.path = "crates/tempo_db"
 tempo_misc.path = "crates/tempo_misc"
 tempo_test.path = "crates/tempo_test"
-
-tempo_provider.path = "crates/tempo_provider"
-tempo_fs_provider.path = "crates/tempo_fs_provider"
+tempo_filesync.path = "crate/tempo_filesync"
 
 anyhow = "1"
 rusqlite = { version = "0.32", features = ["bundled"] }
 tauri = { version = "2", features = ["protocol-asset", "devtools", "test"] }
-tokio = { version = "1", features = ["rt", "sync", "macros"] }
+tokio = { version = "1", features = ["rt", "sync", "macros", "fs" ] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 log = "0.4"
-sha2 = "0.10"
 test-log = "0.2"
 env_logger = "*"
 thiserror = "2"
 uuid = { version = "1", features = ["v4"] }
+crossbeam = "0.8"

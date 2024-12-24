@@ -10,7 +10,10 @@ pub enum Error {
 	Corrupt(String),
 
 	#[error("object store error: {0}")]
-	ObjectStore(String)
+	ObjectStore(String),
+
+	#[error("invalid path state: ")]
+	Path(String)
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
