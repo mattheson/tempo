@@ -2,10 +2,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod tempo;
-
-use std::path::PathBuf;
+use tauri::Manager;
+use tempo::*;
 
 use tempo_misc::fatal_error;
+
+use std::path::PathBuf;
 // use tauri::Manager;
 
 #[cfg(dev)]
@@ -83,7 +85,14 @@ fn main() {
                     .title("Tempo")
                     .build()?;
 
-            // let data_dir = get_data_dir();
+            let data_dir = get_data_dir();
+
+            app.manage(TempoState {
+                dbs: tauri::async_runtime::block_on(tempo_db::Dbs::open(
+                    data_dir,
+                    app.handle().clone(),
+                ))?,
+            });
 
             // match Tempo::new(&data_dir) {
             //     Ok(tempo) => {
@@ -112,30 +121,30 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            // get_store_path,
-            // scan_folders,
-            // check_folder_inside_folder,
-            // is_username_free,
-            // create_or_add_folder,
-            // scan_plugins,
-            // create_channel,
-            // create_note,
-            // add_comment,
-            // need_full_disk,
-            // open_full_disk,
-            // restart,
-            // fatal,
-            // copy_project,
-            // get_file_info,
-            // verify_user_has_ableton,
-            // scan_folder,
-            // scan_folders,
-            // get_folder_data,
-            // get_attachment_type,
-            // remove_folder,
-            // scan_project_file_refs,
-            // scan_project_plugins,
-            // get_last_plugin_scan_time
+            db_test // get_store_path,
+                    // scan_folders,
+                    // check_folder_inside_folder,
+                    // is_username_free,
+                    // create_or_add_folder,
+                    // scan_plugins,
+                    // create_channel,
+                    // create_note,
+                    // add_comment,
+                    // need_full_disk,
+                    // open_full_disk,
+                    // restart,
+                    // fatal,
+                    // copy_project,
+                    // get_file_info,
+                    // verify_user_has_ableton,
+                    // scan_folder,
+                    // scan_folders,
+                    // get_folder_data,
+                    // get_attachment_type,
+                    // remove_folder,
+                    // scan_project_file_refs,
+                    // scan_project_plugins,
+                    // get_last_plugin_scan_time
         ])
         .run(tauri::generate_context!());
 

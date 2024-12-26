@@ -4714,6 +4714,7 @@ dependencies = [
  "tempo_db",
  "tempo_misc",
  "time",
+ "tokio",
  "walkdir",
 ]
 

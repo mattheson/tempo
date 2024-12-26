@@ -414,7 +414,7 @@ mod tests {
             .await;
 
         assert!(match result.unwrap_err() {
-            crate::Error::Rusqlite(e) => {
+            ConnectionError::Rusqlite(e) => {
                 e == rusqlite::Error::SqlInputError {
                     error: rusqlite::ffi::Error {
                         code: rusqlite::ErrorCode::Unknown,
@@ -466,7 +466,7 @@ mod tests {
 
         assert!(matches!(
             result.unwrap_err(),
-            crate::Error::ConnectionClosed
+            ConnectionError::ConnectionClosed
         ));
 
         Ok(())
@@ -510,7 +510,7 @@ mod tests {
         .await?;
 
         assert!(match conn.close().await.unwrap_err() {
-            crate::Error::Close((_, e)) => {
+            ConnectionError::Close((_, e)) => {
                 e == rusqlite::Error::SqliteFailure(
                     rusqlite::ffi::Error {
                         code: rusqlite::ErrorCode::DatabaseBusy,
@@ -541,16 +541,16 @@ mod tests {
     async fn test_error_display() -> Result<()> {
         let conn = Connection::open_in_memory().await?;
 
-        let error = crate::Error::Close((conn, rusqlite::Error::InvalidQuery));
+        let error = ConnectionError::Close((conn, rusqlite::Error::InvalidQuery));
         assert_eq!(
             "Close((Connection, \"Query is not read-only\"))",
             format!("{error}")
         );
 
-        let error = crate::Error::ConnectionClosed;
+        let error = ConnectionError::ConnectionClosed;
         assert_eq!("ConnectionClosed", format!("{error}"));
 
-        let error = crate::Error::Rusqlite(rusqlite::Error::InvalidQuery);
+        let error = ConnectionError::Rusqlite(rusqlite::Error::InvalidQuery);
         assert_eq!("Rusqlite(\"Query is not read-only\")", format!("{error}"));
 
         Ok(())
@@ -560,7 +560,7 @@ mod tests {
     async fn test_error_source() -> Result<()> {
         let conn = Connection::open_in_memory().await?;
 
-        let error = crate::Error::Close((conn, rusqlite::Error::InvalidQuery));
+        let error = ConnectionError::Close((conn, rusqlite::Error::InvalidQuery));
         assert_eq!(
             std::error::Error::source(&error)
                 .and_then(|e| e.downcast_ref::<rusqlite::Error>())
@@ -568,13 +568,13 @@ mod tests {
             &rusqlite::Error::InvalidQuery,
         );
 
-        let error = crate::Error::ConnectionClosed;
+        let error = ConnectionError::ConnectionClosed;
         assert_eq!(
             std::error::Error::source(&error).and_then(|e| e.downcast_ref::<rusqlite::Error>()),
             None,
         );
 
-        let error = crate::Error::Rusqlite(rusqlite::Error::InvalidQuery);
+        let error = ConnectionError::Rusqlite(rusqlite::Error::InvalidQuery);
         assert_eq!(
             std::error::Error::source(&error)
                 .and_then(|e| e.downcast_ref::<rusqlite::Error>())

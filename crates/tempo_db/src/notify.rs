@@ -1,4 +1,5 @@
 /// Sends updates to frontend for reactive changes.
+#[derive(Debug)]
 pub struct DbNotifier<R: tauri::Runtime>(pub(crate) std::sync::Arc<tauri::AppHandle<R>>);
 
 // runtime generic is required here to allow for using tauri's mock app for testing

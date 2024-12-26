@@ -1,8 +1,29 @@
-enum DbTypes {
-    Root,
-    Tree,
-    Note,
-    Shared,
+/// General purpose function for loading databases. Automatically creates tables. Migrates.
+pub fn load(conn: &mut rusqlite::Connection, expected: DbTypes) -> crate::Result<()> {
+    let tx = conn.transaction()?;
+
+    match DbMeta::load(&tx)? {
+        None => {
+            DbMeta {
+                typ: expected,
+                schema: MIGRATIONS[expected as usize].len() - 1,
+            }
+            .init(&tx)?;
+        }
+
+        Some(mut meta) => {
+            if meta.typ != expected {
+                return Err(crate::Error::InvalidDb(format!(
+                    "expected {expected} database, found {meta}"
+                )));
+            }
+
+            meta.migrate(&tx)?;
+        }
+    }
+
+    tx.commit()?;
+    Ok(())
 }
 
 impl std::fmt::Display for DbTypes {
@@ -34,113 +55,201 @@ impl TryFrom<&str> for DbTypes {
     }
 }
 
-pub(crate) struct DbInfo {
-    schema: u32,
+impl rusqlite::types::ToSql for DbTypes {
+    fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
+        Ok(rusqlite::types::ToSqlOutput::Owned(
+            rusqlite::types::Value::Text(self.to_string()),
+        ))
+    }
+}
+
+impl rusqlite::types::FromSql for DbTypes {
+    fn column_result(value: rusqlite::types::ValueRef<'_>) -> rusqlite::types::FromSqlResult<Self> {
+        Self::try_from(value.as_str()?)
+            .map_err(|e| rusqlite::types::FromSqlError::Other(Box::new(e)))
+    }
+}
+
+#[repr(usize)]
+#[derive(PartialEq, Clone, Copy)]
+pub enum DbTypes {
+    Root = 0,
+    Tree = 1,
+    Note = 2,
+    Shared = 3,
+}
+
+type Migrations = &'static [&'static [fn(&rusqlite::Connection) -> crate::Result<()>]];
+
+// schema number = idx of function last ran in here
+// everything past 0 should be a migration
+const MIGRATIONS: Migrations = &[&[root::init]];
+
+pub(crate) struct DbMeta {
+    schema: usize,
     typ: DbTypes,
 }
 
-/// Gets info about the provided database.
-pub fn get_info(conn: &mut rusqlite::Connection) -> anyhow::Result<Option<u32>> {
-    use rusqlite::OptionalExtension;
-    if conn
-        .query_row(
-            "SELECT name FROM sqlite_master WHERE name='tempo_misc'",
-            [],
-            |_| Ok(()),
-        )
-        .optional()?
-        .is_none()
-    {
-        Ok(None)
-    } else {
-        Ok(conn
-            .query_row("SELECT schema FROM tempo_misc", [], |row| row.get(0))
-            .optional()?)
+impl std::fmt::Display for DbMeta {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Tempo {} database, schema {}", self.typ, self.schema)
     }
 }
 
-mod root {
-    use super::*;
-
-    // pub const SQL_DB_NAME: &str = "tempo.sqlite";
-    const SCHEMA: u32 = 0;
-
-    /// Sets up Tempo's root SQLite database, given a connection to the database.
-    /// Performs initial setup/migrations if needed.
-    pub fn setup(conn: &mut rusqlite::Connection) -> anyhow::Result<()> {
-        if let Some(schema) = get_info(conn)? {
-            if schema != SCHEMA {
-                log::error!("root sql schema does not match! expected {SCHEMA}, found {schema}");
-                // TODO migrations and better error to user here
-                panic!("root sql migrations unimplemented! expected {SCHEMA}, found {schema}");
-            }
-        } else {
-            schema_0(conn)?;
+impl DbMeta {
+    pub(crate) fn load(conn: &rusqlite::Connection) -> crate::Result<Option<Self>> {
+        use rusqlite::OptionalExtension;
+        if (conn
+            .query_row(
+                "SELECT name FROM sqlite_master WHERE name='tempo_info'",
+                [],
+                |_| Ok(()),
+            )
+            .optional()?)
+        .is_none()
+        {
+            return Ok(None);
         }
-        Ok(())
+
+        match conn.query_row("SELECT schema, typ FROM tempo_info", [], |row| {
+            Ok((row.get(0)?, row.get(1)?))
+        }) {
+            Ok((schema, typ)) => Ok(Some(Self { schema, typ })),
+            Err(e) => Err(crate::Error::InvalidDb(e.to_string())),
+        }
     }
 
-    pub fn schema_0(conn: &mut rusqlite::Connection) -> anyhow::Result<()> {
+    pub(crate) fn init(&self, conn: &rusqlite::Connection) -> crate::Result<()> {
         conn.execute(
             r#"
- 
-CREATE TABLE IF NOT EXISTS tempo_info (
-    id INTEGER PRIMARY KEY CHECK (id = 0),
-    schema INTEGER NOT NULL,
-    typ STRING NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS misc (
-    id INTEGER PRIMARY KEY CHECK (id = 0),
-    schema INTEGER NOT NULL,
-    uuid TEXT NOT NULL,
-
-    -- json store for frontend
-    store TEXT
-);
-
-CREATE TABLE IF NOT EXISTS libraries (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    typ TEXT NOT NULL,
-    typ_id TEXT NOT NULL,
-
-    name TEXT NOT NULL,
-
-    UNIQUE (ty, ty_id)
-);
-
-    "#,
+            CREATE TABLE tempo_info (
+                id INTEGER PRIMARY KEY CHECK (id = 0),
+                schema INTEGER NOT NULL,
+                typ STRING NOT NULL
+            );
+        "#,
             [],
         )?;
 
-        let mut stmt = conn.prepare(
+        conn.execute(
             r#"
-INSERT INTO tempo_misc (id, schema, typ) VALUES (0, ?1, ?2);
-    "#,
+INSERT INTO tempo_info (id, schema, typ) VALUES (0, ?1, ?2);
+        "#,
+            rusqlite::params![self.schema, self.typ],
         )?;
 
-        stmt.execute(rusqlite::params![0, uuid::Uuid::new_v4().to_string()])?;
+        for m in MIGRATIONS[self.typ as usize][0..=self.schema].iter() {
+            m(conn)?;
+        }
 
         Ok(())
     }
 
-    #[cfg(test)]
-    mod tests {
-        use super::*;
-        use test_log::test;
+    pub(crate) fn migrate(&mut self, conn: &rusqlite::Connection) -> crate::Result<()> {
+        let migrations = MIGRATIONS[self.typ as usize];
 
-        #[test]
-        pub fn test() {
-            let dir = tempo_test::get_temp_dir("create_and_load_db").unwrap();
-            let f = || {
-                let mut conn = rusqlite::Connection::open(dir.path().join("tempo.sqlite")).unwrap();
-
-                setup(&mut conn).unwrap();
-            };
-            f();
-            f();
+        if self.schema == migrations.len() - 1 {
+            return Ok(());
         }
+
+        if self.schema > migrations.len() - 1 {
+            return Err(crate::Error::InvalidDb(format!(
+                "unexpected {self}, only know up to migration {}",
+                MIGRATIONS[self.typ as usize].len()
+            )));
+        }
+
+        for m in migrations[self.schema..=migrations.len() - 1].iter() {
+            m(conn)?;
+        }
+
+        self.schema = migrations.len() - 1;
+
+        Ok(())
+    }
+}
+
+pub mod root {
+    pub fn init(conn: &rusqlite::Connection) -> crate::Result<()> {
+        conn.execute(
+            r#"
+            CREATE TABLE misc (
+                id INTEGER PRIMARY KEY CHECK (id = 0),
+                schema INTEGER NOT NULL,
+                uuid TEXT NOT NULL,
+                notes_dir TEXT,
+            
+                -- json store for frontend
+                store TEXT
+            );
+
+
+            "#,
+            [],
+        )?;
+
+        conn.execute(
+            r#"
+            CREATE TABLE trees (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                path TEXT NOT NULL,
+
+                name TEXT NOT NULL,
+
+                UNIQUE(path)
+            );
+            "#,
+            [],
+        )?;
+
+        Ok(())
+    }
+
+    pub fn add_tree(
+        conn: &rusqlite::Connection,
+        path: impl AsRef<std::path::Path>,
+        name: &str,
+    ) -> crate::Result<()> {
+        conn.execute(
+            r#"
+        INSERT INTO trees (path, name) VALUES (?1, ?2);
+        "#,
+            rusqlite::params![path.as_ref().to_string_lossy(), name],
+        )?;
+        Ok(())
+    }
+
+    pub fn remove_tree(
+        conn: &rusqlite::Connection,
+        path: impl AsRef<std::path::Path>,
+    ) -> crate::Result<()> {
+        conn.execute(
+            "DELETE FROM trees WHERE path = ?1",
+            rusqlite::params![path.as_ref().to_string_lossy()],
+        )?;
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use test_log::test;
+
+    #[test]
+    pub fn test() {
+        let dir = tempo_test::get_temp_dir("create_and_load_db").unwrap();
+        let f = || {
+            let mut conn = rusqlite::Connection::open(dir.path().join("tempo.sqlite3")).unwrap();
+            load(&mut conn, DbTypes::Root).unwrap();
+        };
+        f();
+        f();
+        let mut conn = rusqlite::Connection::open(dir.path().join("tempo.sqlite3")).unwrap();
+        load(&mut conn, DbTypes::Root).unwrap();
+        root::add_tree(&conn, "/tmp/asdfasdf", "test").unwrap();
+        root::remove_tree(&conn, "/tmp/asdfasdf").unwrap();
     }
 }
 
