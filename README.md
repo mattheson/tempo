@@ -7,7 +7,12 @@ Go to "Releases" to download.
 *macOS is only supported as of now! Windows support is coming soon...*
 
 ## Current Status
-My current focus is on a partial rewrite of Tempo in the `beta` branch.
+My current focus is on a big rewrite of Tempo in the `beta` branch.
+
+I have exciting ideas for what the beta version will look like :)
+
+I hope to have it working around March 2025.
+
 Alpha version is usable and I can address issues in it as needed.
 
 # License
