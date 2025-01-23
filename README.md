@@ -4,16 +4,18 @@
 Refined collaboration and version management for Ableton.
 Go to "Releases" to download.
 
-*macOS is only supported as of now! Windows support is coming soon...*
+*macOS is only supported as of now!*
 
 ## Current Status
-My current focus is on a big rewrite of Tempo in the `beta` branch.
+**I am currently not working on Tempo**. My focus has shifted to some other projects.
 
-I have exciting ideas for what the beta version will look like :)
+**I promise to revisit Tempo in the future!** I'm not sure when, but the project is still exciting and I think there's potential for it. I have some interesting ideas for a future direction for Tempo.
 
-I hope to have it working around March 2025.
+The alpha version is usable and I encourage you to try it out!
 
-Alpha version is usable and I can address issues in it as needed.
+If you're interested in contributing feel free to reach out to me.
+
+Thank you for showing interest in my project.
 
 # License
 
